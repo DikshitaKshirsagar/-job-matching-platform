@@ -2,39 +2,45 @@ import { useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
 
-function Login() {
+function Signup() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleSignup = async () => {
     try {
-      const response = await API.post("/auth/login", {
+      const response = await API.post("/auth/register", {
+        name,
         email,
-        password
+        password,
+        role: "SEEKER"
       });
 
       console.log(response.data);
 
-      // Save data
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("name", response.data.name);
-      localStorage.setItem("role", response.data.role);
-      localStorage.setItem("userId", response.data.userId);
-
-      // Go to next page
-      navigate("/dashboard");
+      navigate("/login");
 
     } catch (error) {
       console.error(error);
-      alert("Login failed");
+      alert("Signup failed");
     }
   };
 
   return (
     <div style={{ padding: "20px", maxWidth: "400px", margin: "auto" }}>
-      <h2>Login</h2>
-      <p>Enter your credentials to access your account.</p>
+      <h2>Sign Up</h2>
+      <p>Create an account to start your job search.</p>
+      <div style={{ marginBottom: "10px" }}>
+        <label>Name:</label>
+        <input
+          type="text"
+          placeholder="Enter your name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+        />
+      </div>
       <div style={{ marginBottom: "10px" }}>
         <label>Email:</label>
         <input
@@ -56,16 +62,16 @@ function Login() {
         />
       </div>
       <button
-        onClick={handleLogin}
-        style={{ padding: "10px 20px", backgroundColor: "#28a745", color: "white", border: "none", cursor: "pointer" }}
+        onClick={handleSignup}
+        style={{ padding: "10px 20px", backgroundColor: "#007bff", color: "white", border: "none", cursor: "pointer" }}
       >
-        Login
+        Sign Up
       </button>
       <p style={{ marginTop: "10px" }}>
-        Don't have an account? <a href="/signup">Sign up here</a>
+        Already have an account? <a href="/login">Login here</a>
       </p>
     </div>
   );
 }
 
-export default Login;
+export default Signup;
