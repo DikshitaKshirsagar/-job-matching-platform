@@ -6,9 +6,14 @@ function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");        // ← added
+  const [loading, setLoading] = useState(false); // ← added
   const navigate = useNavigate();
 
-  const handleSignup = async () => {
+  const handleSignup = async (e) => {
+    e.preventDefault();          // ← IMPORTANT: stops page refresh
+    setError("");
+    setLoading(true);
     try {
       const response = await API.post("/auth/register", {
         name,
@@ -18,12 +23,17 @@ function Signup() {
       });
 
       console.log(response.data);
-
       navigate("/login");
 
-    } catch (error) {
-      console.error(error);
-      alert("Signup failed");
+    } catch (err) {
+      console.error(err);
+      // This shows the REAL error from backend, not just "Signup failed"
+      const msg = err.response?.data?.message 
+               || err.response?.data?.error
+               || "Signup failed. Please try again.";
+      setError(msg);             // ← shows real error on screen
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,6 +41,10 @@ function Signup() {
     <div style={{ padding: "20px", maxWidth: "400px", margin: "auto" }}>
       <h2>Sign Up</h2>
       <p>Create an account to start your job search.</p>
+
+      {/* Shows real backend error message */}
+      {error && <p style={{ color: "red", marginBottom: "10px" }}>{error}</p>}
+
       <div style={{ marginBottom: "10px" }}>
         <label>Name:</label>
         <input
@@ -39,6 +53,7 @@ function Signup() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+          disabled={loading}
         />
       </div>
       <div style={{ marginBottom: "10px" }}>
@@ -49,6 +64,7 @@ function Signup() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+          disabled={loading}
         />
       </div>
       <div style={{ marginBottom: "10px" }}>
@@ -59,13 +75,22 @@ function Signup() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           style={{ width: "100%", padding: "8px", marginTop: "5px" }}
+          disabled={loading}
         />
       </div>
       <button
         onClick={handleSignup}
-        style={{ padding: "10px 20px", backgroundColor: "#007bff", color: "white", border: "none", cursor: "pointer" }}
+        disabled={loading}
+        style={{ 
+          padding: "10px 20px", 
+          backgroundColor: loading ? "#6c757d" : "#007bff", 
+          color: "white", 
+          border: "none", 
+          cursor: loading ? "not-allowed" : "pointer",
+          width: "100%"        // ← made full width like your login button
+        }}
       >
-        Sign Up
+        {loading ? "Signing up..." : "Sign Up"}
       </button>
       <p style={{ marginTop: "10px" }}>
         Already have an account? <a href="/login">Login here</a>
