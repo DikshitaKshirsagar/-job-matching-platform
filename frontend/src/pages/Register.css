@@ -1,0 +1,45 @@
+.register-page {
+  display: flex;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: #f2f5ff;
+}
+
+.register-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 420px;
+  padding: 26px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.input-error {
+  border-color: #dc3545;
+}
+
+.field-error {
+  color: #dc3545;
+  font-size: 12px;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #6c63ff;
+  color: white;
+  cursor: pointer;
+}
+
+.btn-submit[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
