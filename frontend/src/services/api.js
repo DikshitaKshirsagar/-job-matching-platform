@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API = axios.create({ baseURL: 'http://localhost:8081/api/v1' });
+const API = axios.create({ baseURL: 'http://localhost:8080/api/v1' });
 
 API.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
@@ -36,4 +36,5 @@ API.interceptors.response.use(
   }
 );
 
+export const getJobs = () => API.get('/jobs');
 export default API;
