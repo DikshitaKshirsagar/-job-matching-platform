@@ -2,7 +2,7 @@
 // Place this file in: src/pages/Register.jsx (or src/components/Register.jsx)
 
 import React, { useState } from "react";
-import axios from "axios";
+import { authService } from "../services/auth";
 import { useNavigate, Link } from "react-router-dom";
 import "./Register.css";
 
@@ -49,8 +49,11 @@ const Register = () => {
 
     if (!formData.password) {
       newErrors.password = "Password is required.";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters.";
+    } else if (formData.password.length < 8 || 
+            !/[A-Z]/.test(formData.password) || 
+            !/[a-z]/.test(formData.password) || 
+            !/\d/.test(formData.password)) {
+      newErrors.password = "Password must be 8+ chars with uppercase, lowercase, and digit";
     }
 
     if (!formData.confirmPassword) {
@@ -62,7 +65,7 @@ const Register = () => {
     return newErrors;
   };
 
-  // Returns true if form is valid (used to disable button)
+  // isFormValid - kept for potential future use (eslint happy)
   const isFormValid = () => {
     return (
       formData.name.trim() &&
@@ -87,12 +90,11 @@ const Register = () => {
     setSuccessMessage("");
 
     try {
-      // POST to Spring Boot backend (API path consistent with backend controller)
-      await axios.post("http://localhost:8080/api/v1/auth/register", {
+      // Use centralized auth service
+      await authService.register({
         name: formData.name,
         email: formData.email,
-        password: formData.password,
-        role: "SEEKER", // default role
+        password: formData.password
       });
 
       setSuccessMessage("Account created successfully! Redirecting to login...");
@@ -190,7 +192,7 @@ const Register = () => {
               id="password"
               type="password"
               name="password"
-              placeholder="Min. 6 characters"
+              placeholder="Min. 8 chars (upper, lower, number)"
               value={formData.password}
               onChange={handleChange}
               className={errors.password ? "input-error" : ""}
@@ -221,9 +223,14 @@ const Register = () => {
           <button
             type="submit"
             className="btn-submit"
-            disabled={!isFormValid() || loading}
+            disabled={loading}
           >
-            {loading ? <span className="spinner" /> : "Create Account"}
+            {loading ? (
+              <>
+                <span className="spinner" style={{marginRight: '8px'}} />
+                Creating Account...
+              </>
+            ) : "Create Account"}
           </button>
         </form>
 

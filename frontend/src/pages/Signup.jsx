@@ -1,5 +1,5 @@
 import { useState } from "react";
-import API from "../services/api";
+import { authService } from "../services/auth";
 import { useNavigate } from "react-router-dom";
 
 function Signup() {
@@ -15,14 +15,8 @@ function Signup() {
     setError("");
     setLoading(true);
     try {
-      const response = await API.post("/auth/register", {
-        name,
-        email,
-        password,
-        role: "SEEKER"
-      });
+      await authService.register({ name, email, password });
 
-      console.log(response.data);
       navigate("/login");
 
     } catch (err) {

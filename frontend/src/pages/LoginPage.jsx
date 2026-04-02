@@ -1,6 +1,6 @@
 import "./Login.css";
 import { useState } from "react";
-import API from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
 function Login() {
@@ -9,6 +9,7 @@ function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -16,19 +17,10 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await API.post("/auth/login", {
-        email,
-        password,
-      });
-
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("role", response.data.role);
-      localStorage.setItem("name", response.data.name);
-      localStorage.setItem("userId", response.data.userId);
-
-      navigate("/dashboard");
+      await login({ email, password });
+      // Context handles navigation
     } catch (err) {
-      setError("Invalid email or password");
+      setError(err.response?.data?.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }

@@ -1,24 +1,21 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Dashboard() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-    }
-  }, [navigate]);
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
+    logout();
   };
+
+  if (!user) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>Welcome to Job Matching Platform</h2>
+      <h2>Welcome to Job Matching Platform, {user.name}!</h2>
+      <p>Role: {user.role}</p>
+      <p>User ID: {user.userId}</p>
       <p>You are logged in!</p>
       <button onClick={handleLogout} style={{ padding: "10px 20px", backgroundColor: "#dc3545", color: "white", border: "none", cursor: "pointer" }}>
         Logout
