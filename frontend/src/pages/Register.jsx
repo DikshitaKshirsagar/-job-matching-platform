@@ -15,6 +15,7 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "SEEKER",
   });
 
   // ─── Error State (per field + global) ─────────────────────────
@@ -62,6 +63,10 @@ const Register = () => {
       newErrors.confirmPassword = "Passwords do not match.";
     }
 
+    if (!formData.role) {
+      newErrors.role = "Please select account type.";
+    }
+
     return newErrors;
   };
 
@@ -91,11 +96,7 @@ const Register = () => {
 
     try {
       // Use centralized auth service
-      await authService.register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password
-      });
+      await authService.register(formData);
 
       setSuccessMessage("Account created successfully! Redirecting to login...");
 
@@ -217,6 +218,22 @@ const Register = () => {
             {errors.confirmPassword && (
               <span className="field-error">{errors.confirmPassword}</span>
             )}
+          </div>
+
+          {/* Role Selection */}
+          <div className="form-group">
+            <label htmlFor="role">Account Type</label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className={errors.role ? "input-error" : ""}
+            >
+              <option value="SEEKER">Job Seeker</option>
+              <option value="RECRUITER">Recruiter</option>
+            </select>
+            {errors.role && <span className="field-error">{errors.role}</span>}
           </div>
 
           {/* Submit Button */}

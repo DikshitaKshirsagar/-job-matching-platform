@@ -18,10 +18,7 @@ export const authService = {
 
   // Register new user (default role: SEEKER)
   async register(userData) {
-    const response = await API.post('/auth/register', {
-      ...userData,
-      role: 'SEEKER' // default
-    });
+    const response = await API.post('/auth/register', userData);
     return response.data;
   },
 
