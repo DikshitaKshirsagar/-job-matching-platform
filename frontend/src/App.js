@@ -1,88 +1,96 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
-import Signup from "./pages/Signup";
-import LoginPage from "./pages/LoginPage";
-import Dashboard from "./pages/Dashboard";
+import Login from "./pages/LoginPage";
 import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Jobs from "./pages/Jobs";
+import Applications from "./pages/Application";
+import Profile from "./pages/Profile";
 
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  const { user, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  
-  return user ? children : <Navigate to="/login" />;
+/* ================================
+   PROTECTED ROUTE (AUTH CHECK)
+================================ */
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" />;
 };
 
-// Auth Route Component (only for unauthenticated)
-const AuthRoute = ({ children }) => {
-  const { user, isLoading } = useAuth();
-  
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  
-  return user ? <Navigate to="/dashboard" /> : children;
+const PublicRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  return token ? <Navigate to="/dashboard" /> : children;
 };
-
-function AppContent() {
-  return (
-    <Routes>
-      <Route 
-        path="/" 
-        element={
-          <AuthRoute>
-            <Register />
-          </AuthRoute>
-        } 
-      />
-      <Route 
-        path="/login" 
-        element={
-          <AuthRoute>
-            <LoginPage />
-          </AuthRoute>
-        } 
-      />
-      <Route 
-        path="/signup" 
-        element={
-          <AuthRoute>
-            <Signup />
-          </AuthRoute>
-        } 
-      />
-      <Route 
-        path="/register" 
-        element={
-          <AuthRoute>
-            <Register />
-          </AuthRoute>
-        } 
-      />
-      <Route 
-        path="/dashboard" 
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="*" element={<Navigate to="/login" />} />
-    </Routes>
-  );
-}
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </BrowserRouter>
+    <Router>
+      <Routes>
+
+        {/* PUBLIC ROUTES */}
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
+
+        {/* PROTECTED ROUTES */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/jobs"
+          element={
+            <PrivateRoute>
+              <Jobs />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/applications"
+          element={
+            <PrivateRoute>
+              <Applications />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={<Navigate to="/profile" replace />}
+        />
+
+        {/* DEFAULT REDIRECT */}
+        <Route path="*" element={<Navigate to="/dashboard" />} />
+
+      </Routes>
+    </Router>
   );
 }
 

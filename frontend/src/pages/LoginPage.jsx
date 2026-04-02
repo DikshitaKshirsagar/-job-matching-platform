@@ -18,9 +18,13 @@ function Login() {
 
     try {
       await login({ email, password });
-      // Context handles navigation
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password");
+      const message =
+        err.response?.data?.message ||
+        err.response?.data ||
+        "Invalid email or password";
+      setError(typeof message === "string" ? message : "Invalid email or password");
     } finally {
       setLoading(false);
     }

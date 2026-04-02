@@ -1,0 +1,108 @@
+/* ===== PAGE ===== */
+.jobs-page {
+  padding: 30px;
+  color: white;
+}
+
+/* HEADER */
+.jobs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.jobs-header h2 {
+  font-size: 28px;
+}
+
+.jobs-header input {
+  padding: 10px 15px;
+  border-radius: 25px;
+  border: none;
+  outline: none;
+  width: 250px;
+}
+
+/* JOB LIST */
+.jobs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* CARD */
+.job-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 20px;
+  border-radius: 15px;
+
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+
+  transition: 0.3s;
+}
+
+.job-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255,255,255,0.08);
+}
+
+/* LEFT */
+.job-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.job-left img {
+  width: 50px;
+  height: 50px;
+}
+
+.job-left h3 {
+  font-size: 18px;
+}
+
+.job-left p {
+  font-size: 14px;
+  color: #aaa;
+}
+
+/* RIGHT */
+.job-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.salary {
+  color: #81ecff;
+  font-weight: bold;
+}
+
+.job-right button {
+  padding: 10px 18px;
+  border-radius: 20px;
+  border: none;
+  background: linear-gradient(135deg,#81ecff,#ac89ff);
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.job-right button:hover {
+  transform: scale(1.05);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .job-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
