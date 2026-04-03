@@ -172,11 +172,6 @@ public class AuthService {
                         new AppException("Invalid email or password", HttpStatus.UNAUTHORIZED)
                 );
 
-        // Check if email verified
-        if (!user.isEmailVerified()) {
-            throw new AppException("Please verify your email before logging in", HttpStatus.UNAUTHORIZED);
-        }
-
         // Check password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new AppException("Invalid email or password", HttpStatus.UNAUTHORIZED);

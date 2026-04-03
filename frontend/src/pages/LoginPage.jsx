@@ -17,7 +17,7 @@ function Login() {
 
     try {
       await login({ email, password });
-      // Context handles navigation
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password");
     } finally {
