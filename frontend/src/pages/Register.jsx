@@ -70,12 +70,15 @@ const Register = () => {
     return newErrors;
   };
 
-  // isFormValid - kept for potential future use (eslint happy)
+  // isFormValid - used to guard submit button during invalid data
   const isFormValid = () => {
     return (
       formData.name.trim() &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
-      formData.password.length >= 6 &&
+      formData.password.length >= 8 &&
+      /[A-Z]/.test(formData.password) &&
+      /[a-z]/.test(formData.password) &&
+      /\d/.test(formData.password) &&
       formData.password === formData.confirmPassword
     );
   };
@@ -240,7 +243,7 @@ const Register = () => {
           <button
             type="submit"
             className="btn-submit"
-            disabled={loading}
+            disabled={loading || !isFormValid()}
           >
             {loading ? (
               <>

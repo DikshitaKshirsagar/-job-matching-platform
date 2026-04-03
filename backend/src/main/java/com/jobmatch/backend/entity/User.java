@@ -37,6 +37,8 @@ public class User implements UserDetails {
     @Column(columnDefinition = "TEXT")
     private String resumeText;
 
+    private String resumeFileName;
+
     @Column(nullable = false)
     private boolean emailVerified = false;
 
