@@ -1,2 +1,4 @@
-.idea/
-backend/src/test/resources/
+backend/backend-run.log
+backend/backend-run.err.log
+backend/data/jobmatchdb.lock.db
+.vscode/
