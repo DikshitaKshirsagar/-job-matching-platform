@@ -1,0 +1,67 @@
+/* PAGE */
+.applications-page {
+  padding: 30px;
+  color: white;
+}
+
+.applications-page h2 {
+  margin-bottom: 20px;
+}
+
+/* LIST */
+.applications-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* CARD */
+.application-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 20px;
+  border-radius: 15px;
+
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+
+  transition: 0.3s;
+}
+
+.application-card:hover {
+  transform: translateY(-5px);
+}
+
+/* LEFT */
+.app-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.app-left img {
+  width: 50px;
+}
+
+/* STATUS */
+.status {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* STATUS COLORS */
+.status.pending {
+  background: orange;
+}
+
+.status.accepted {
+  background: green;
+}
+
+.status.rejected {
+  background: red;
+}
