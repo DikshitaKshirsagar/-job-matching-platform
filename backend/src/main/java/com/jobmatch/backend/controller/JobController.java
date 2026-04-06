@@ -19,7 +19,7 @@ public class JobController {
     @GetMapping
     public ResponseEntity<List<Job>> getAllJobs() {
         List<Job> jobs = jobRepository.findAll();
-        return ResponseEntity.ok(jobs);
+        return ResponseEntity.ok(List.copyOf(jobs));
     }
 
     @PostConstruct
@@ -32,3 +32,4 @@ public class JobController {
         }
     }
 }
+
