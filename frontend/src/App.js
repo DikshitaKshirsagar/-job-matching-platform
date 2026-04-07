@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext"; // ✅ ADD THIS
 
 import Login from "./pages/LoginPage";
 import Register from "./pages/Register";
@@ -9,7 +10,7 @@ import Applications from "./pages/Application";
 import Profile from "./pages/Profile";
 
 /* ================================
-   PROTECTED ROUTE (AUTH CHECK)
+   PROTECTED ROUTE
 ================================ */
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -23,74 +24,71 @@ const PublicRoute = ({ children }) => {
 
 function App() {
   return (
-    <Router>
-      <Routes>
+    <AuthProvider> {/* ✅ THIS WAS MISSING */}
+      <Router>
+        <Routes>
 
-        {/* PUBLIC ROUTES */}
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          }
-        />
+          {/* PUBLIC */}
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
 
-        {/* PROTECTED ROUTES */}
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
 
-        <Route
-          path="/jobs"
-          element={
-            <PrivateRoute>
-              <Jobs />
-            </PrivateRoute>
-          }
-        />
+          {/* PRIVATE */}
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
 
-        <Route
-          path="/applications"
-          element={
-            <PrivateRoute>
-              <Applications />
-            </PrivateRoute>
-          }
-        />
+          <Route
+            path="/jobs"
+            element={
+              <PrivateRoute>
+                <Jobs />
+              </PrivateRoute>
+            }
+          />
 
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute>
-              <Profile />
-            </PrivateRoute>
-          }
-        />
+          <Route
+            path="/applications"
+            element={
+              <PrivateRoute>
+                <Applications />
+              </PrivateRoute>
+            }
+          />
 
-        <Route
-          path="/settings"
-          element={<Navigate to="/profile" replace />}
-        />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
 
-        {/* DEFAULT REDIRECT */}
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route path="*" element={<Navigate to="/dashboard" />} />
 
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

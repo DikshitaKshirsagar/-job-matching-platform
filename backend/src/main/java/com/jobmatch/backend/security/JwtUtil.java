@@ -3,6 +3,7 @@ package com.jobmatch.backend.security;
 import com.jobmatch.backend.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -62,3 +63,4 @@ public class JwtUtil {
         }
     }
 }
+

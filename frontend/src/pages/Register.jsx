@@ -1,6 +1,3 @@
-// Register.jsx
-// Place this file in: src/pages/Register.jsx (or src/components/Register.jsx)
-
 import React, { useState } from "react";
 import { authService } from "../services/auth";
 import { useNavigate, Link } from "react-router-dom";
@@ -9,7 +6,6 @@ import "./Register.css";
 const Register = () => {
   const navigate = useNavigate();
 
-  // ─── Form State ───────────────────────────────────────────────
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,23 +14,18 @@ const Register = () => {
     role: "SEEKER",
   });
 
-  // ─── Error State (per field + global) ─────────────────────────
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
   const [apiError, setApiError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ─── Handle Input Change ───────────────────────────────────────
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Clear field error on change
     setErrors((prev) => ({ ...prev, [name]: "" }));
     setApiError("");
   };
 
-  // ─── Validation ────────────────────────────────────────────────
   const validate = () => {
     const newErrors = {};
 
@@ -50,10 +41,12 @@ const Register = () => {
 
     if (!formData.password) {
       newErrors.password = "Password is required.";
-    } else if (formData.password.length < 8 || 
-            !/[A-Z]/.test(formData.password) || 
-            !/[a-z]/.test(formData.password) || 
-            !/\d/.test(formData.password)) {
+    } else if (
+      formData.password.length < 8 ||
+      !/[A-Z]/.test(formData.password) ||
+      !/[a-z]/.test(formData.password) ||
+      !/\d/.test(formData.password)
+    ) {
       newErrors.password = "Password must be 8+ chars with uppercase, lowercase, and digit";
     }
 
@@ -70,17 +63,6 @@ const Register = () => {
     return newErrors;
   };
 
-  // isFormValid - kept for potential future use (eslint happy)
-  const isFormValid = () => {
-    return (
-      formData.name.trim() &&
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
-      formData.password.length >= 6 &&
-      formData.password === formData.confirmPassword
-    );
-  };
-
-  // ─── Handle Submit ─────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -95,17 +77,17 @@ const Register = () => {
     setSuccessMessage("");
 
     try {
-      // Use centralized auth service
       await authService.register(formData);
 
+      // ✅ Show success message
       setSuccessMessage("Account created successfully! Redirecting to login...");
 
-      // Redirect to login after 2 seconds
+      // ✅ Redirect to login after 2 seconds
       setTimeout(() => {
         navigate("/login");
-      }, 1000);
+      }, 2000);
+
     } catch (err) {
-      // Show backend error message if available
       const message =
         err.response?.data?.message ||
         err.response?.data ||
@@ -116,15 +98,12 @@ const Register = () => {
     }
   };
 
-  // ─── Render ────────────────────────────────────────────────────
   return (
     <div className="register-page">
-      {/* Background decorative blobs */}
       <div className="blob blob-1" />
       <div className="blob blob-2" />
 
       <div className="register-card">
-        {/* Header */}
         <div className="register-header">
           <div className="logo-mark">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
@@ -136,7 +115,7 @@ const Register = () => {
           <p className="register-subtitle">Join thousands finding their dream jobs</p>
         </div>
 
-        {/* Success Message */}
+        {/* ✅ Success Message */}
         {successMessage && (
           <div className="alert alert-success">
             <span className="alert-icon">✓</span>
@@ -144,7 +123,7 @@ const Register = () => {
           </div>
         )}
 
-        {/* API Error */}
+        {/* ✅ API Error */}
         {apiError && (
           <div className="alert alert-error">
             <span className="alert-icon">✕</span>
@@ -152,9 +131,7 @@ const Register = () => {
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} noValidate>
-          {/* Full Name */}
           <div className="form-group">
             <label htmlFor="name">Full Name</label>
             <input
@@ -170,7 +147,6 @@ const Register = () => {
             {errors.name && <span className="field-error">{errors.name}</span>}
           </div>
 
-          {/* Email */}
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <input
@@ -186,7 +162,6 @@ const Register = () => {
             {errors.email && <span className="field-error">{errors.email}</span>}
           </div>
 
-          {/* Password */}
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -202,7 +177,6 @@ const Register = () => {
             {errors.password && <span className="field-error">{errors.password}</span>}
           </div>
 
-          {/* Confirm Password */}
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
             <input
@@ -220,7 +194,6 @@ const Register = () => {
             )}
           </div>
 
-          {/* Role Selection */}
           <div className="form-group">
             <label htmlFor="role">Account Type</label>
             <select
@@ -236,22 +209,18 @@ const Register = () => {
             {errors.role && <span className="field-error">{errors.role}</span>}
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="btn-submit"
-            disabled={loading}
-          >
+          <button type="submit" className="btn-submit" disabled={loading}>
             {loading ? (
               <>
-                <span className="spinner" style={{marginRight: '8px'}} />
+                <span className="spinner" style={{ marginRight: "8px" }} />
                 Creating Account...
               </>
-            ) : "Create Account"}
+            ) : (
+              "Create Account"
+            )}
           </button>
         </form>
 
-        {/* Footer */}
         <p className="register-footer">
           Already have an account?{" "}
           <Link to="/login" className="link">

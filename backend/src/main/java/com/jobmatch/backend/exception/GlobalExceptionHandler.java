@@ -1,5 +1,6 @@
 package com.jobmatch.backend.exception;
 
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -9,8 +10,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<?> handleAppException(AppException ex) {
-        return ResponseEntity
-                .status(ex.getStatus())
+        return ResponseEntity.status((HttpStatusCode) ex.getStatus())
                 .body(ex.getMessage());
     }
 
@@ -21,3 +21,4 @@ public class GlobalExceptionHandler {
                 .body("Something went wrong");
     }
 }
+

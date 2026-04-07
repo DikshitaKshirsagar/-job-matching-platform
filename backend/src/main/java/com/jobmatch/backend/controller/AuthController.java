@@ -1,6 +1,7 @@
 package com.jobmatch.backend.controller;
 
 import com.jobmatch.backend.dto.AuthResponse;
+import com.jobmatch.backend.dto.ErrorResponse;
 import com.jobmatch.backend.dto.ForgotPasswordRequest;
 import com.jobmatch.backend.dto.LoginRequest;
 import com.jobmatch.backend.dto.RegisterRequest;
@@ -31,7 +32,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getMessage()));
         }
     }
 
@@ -79,7 +80,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(e.getMessage());
+                    .body(new ErrorResponse(e.getMessage()));
         }
     }
 

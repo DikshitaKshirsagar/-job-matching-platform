@@ -1,6 +1,6 @@
 package com.jobmatch.backend.security;
 
-import com.jobmatch.backend.security.JwtAuthFilter;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,7 +64,12 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://localhost:3001",
                 "http://localhost:3008",
-                "http://127.0.0.1:3000"
+                "http://127.0.0.1:3000",
+                "http://localhost:61671",
+                "http://localhost:61672",
+                "http://localhost:61673",
+                "http://localhost:61674",
+                "http://localhost:61675"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));

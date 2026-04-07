@@ -24,8 +24,8 @@ public class EmailService {
             JobMatch Team
             """.formatted(userName, verificationUrl);
         
+        log.info("MOCK VERIFICATION EMAIL - Subject: '{}', Body preview: '{}' to {}", subject, body.substring(0, Math.min(100, body.length())), to);
         // Mock send - log instead of real email
-log.info("MOCK VERIFICATION EMAIL SENT to {}", to);
     }
 
     public void sendPasswordResetEmail(String to, String token, String userName) {
@@ -46,7 +46,8 @@ log.info("MOCK VERIFICATION EMAIL SENT to {}", to);
             JobMatch Team
             """.formatted(userName, resetUrl);
         
+        log.info("MOCK PASSWORD RESET EMAIL - Subject: '{}', Body preview: '{}' to {}", subject, body.substring(0, Math.min(100, body.length())), to);
         // Mock send
-log.info("MOCK PASSWORD RESET EMAIL SENT to {}", to);
     }
 }
+
