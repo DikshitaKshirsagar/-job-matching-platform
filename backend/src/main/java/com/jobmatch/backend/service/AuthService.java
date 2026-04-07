@@ -195,4 +195,25 @@ public class AuthService {
                 "Login successful"
         );
     }
+
+    public AuthResponse saveResume(String email, String resumeText) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
+
+        if (resumeText == null || resumeText.trim().isEmpty()) {
+            throw new AppException("Resume file is empty", HttpStatus.BAD_REQUEST);
+        }
+
+        user.setResumeText(resumeText.trim());
+        userRepository.save(user);
+
+        return new AuthResponse(
+                null,
+                user.getName(),
+                user.getEmail(),
+                user.getRole(),
+                user.getId(),
+                "Resume uploaded successfully"
+        );
+    }
 }

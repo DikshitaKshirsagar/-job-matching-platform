@@ -39,4 +39,5 @@ API.interceptors.response.use(
 export const getJobs = () => API.get('/jobs');
 export const applyJob = (data) => API.post('/applications', data);
 export const getApplications = () => API.get('/applications');
+export const uploadResume = (resumeText) => API.post('/auth/resume', { resumeText });
 export default API;

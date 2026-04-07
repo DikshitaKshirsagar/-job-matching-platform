@@ -1569,3 +1569,14 @@ Hibernate: select j1_0.id,j1_0.company,j1_0.created_at,j1_0.description,j1_0.loc
 2026-04-03T01:18:03.472+05:30 DEBUG 24936 --- [nio-8080-exec-8] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
 2026-04-03T01:18:03.472+05:30 DEBUG 24936 --- [nio-8080-exec-8] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [[Job(id=1, title=Senior Software Engineer, company=TechCorp, description=Fullstack developer with Ja (truncated)...]
 2026-04-03T01:18:03.476+05:30 DEBUG 24936 --- [nio-8080-exec-8] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2026-04-03T01:22:53.004+05:30 DEBUG 24936 --- [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing POST /api/v1/auth/login
+2026-04-03T01:22:53.006+05:30 DEBUG 24936 --- [nio-8080-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-04-03T01:22:53.006+05:30 DEBUG 24936 --- [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured POST /api/v1/auth/login
+2026-04-03T01:22:53.007+05:30 DEBUG 24936 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : POST "/api/v1/auth/login", parameters={}
+2026-04-03T01:22:53.008+05:30 DEBUG 24936 --- [nio-8080-exec-1] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.jobmatch.backend.controller.AuthController#login(LoginRequest)
+2026-04-03T01:22:53.009+05:30 DEBUG 24936 --- [nio-8080-exec-1] m.m.a.RequestResponseBodyMethodProcessor : Read "application/json;charset=UTF-8" to [LoginRequest(email=fkon@gmail.com, password=Fkon12345@)]
+2026-04-03T01:22:53.011+05:30 DEBUG 24936 --- [nio-8080-exec-1] org.hibernate.SQL                        : select u1_0.id,u1_0.created_at,u1_0.email,u1_0.email_verified,u1_0.name,u1_0.password,u1_0.password_reset_token,u1_0.password_reset_token_expiry,u1_0.resume_text,u1_0.role,u1_0.verification_token,u1_0.verification_token_expiry from users u1_0 where upper(u1_0.email)=upper(?)
+Hibernate: select u1_0.id,u1_0.created_at,u1_0.email,u1_0.email_verified,u1_0.name,u1_0.password,u1_0.password_reset_token,u1_0.password_reset_token_expiry,u1_0.resume_text,u1_0.role,u1_0.verification_token,u1_0.verification_token_expiry from users u1_0 where upper(u1_0.email)=upper(?)
+2026-04-03T01:22:53.159+05:30 DEBUG 24936 --- [nio-8080-exec-1] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Using 'application/json', given [application/json, text/plain, */*] and supported [application/json, application/*+json]
+2026-04-03T01:22:53.160+05:30 DEBUG 24936 --- [nio-8080-exec-1] o.s.w.s.m.m.a.HttpEntityMethodProcessor  : Writing [AuthResponse(token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJma29uQGdtYWlsLmNvbSIsImlhdCI6MTc3NTE1OTU3MywiZXhw (truncated)...]
+2026-04-03T01:22:53.161+05:30 DEBUG 24936 --- [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed 200 OK

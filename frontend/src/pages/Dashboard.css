@@ -39,18 +39,23 @@ body {
   margin-top: 30px;
 }
 
-.sidebar nav a {
+.sidebar nav button {
   display: block;
+  width: 100%;
   padding: 12px;
   margin-top: 10px;
   border-radius: 10px;
   color: #aaa;
   cursor: pointer;
   transition: 0.3s;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font: inherit;
 }
 
 .sidebar nav .active,
-.sidebar nav a:hover {
+.sidebar nav button:hover {
   background: rgba(255,255,255,0.1);
   color: #81ecff;
 }
@@ -327,6 +332,19 @@ body {
 
 .resume button:hover {
   transform: scale(1.05);
+}
+
+.resume button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+
+.file-name,
+.upload-message {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #d7f7ff;
 }
 
 /* ===== RESPONSIVE ===== */

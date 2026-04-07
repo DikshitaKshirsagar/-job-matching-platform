@@ -13,7 +13,9 @@ const Applications = () => {
   const fetchApplications = async () => {
     try {
       const res = await getApplications();
-      setApplications(res.data);
+
+      // ✅ FIX: handle backend response safely
+      setApplications(res.data?.data || res.data || []);
     } catch (err) {
       console.error("Error fetching applications:", err);
     } finally {
@@ -53,7 +55,7 @@ const Applications = () => {
 
               <div className="app-right">
                 <span className={`status ${app.status?.toLowerCase()}`}>
-                  {app.status}
+                  {app.status || "Pending"}
                 </span>
               </div>
 

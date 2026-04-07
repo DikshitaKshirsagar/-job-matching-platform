@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import "./Dashboard.css";
 import { useNavigate } from "react-router-dom";
+import { uploadResume } from "../services/api";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const userName = localStorage.getItem("name") || "Om";
   const [fileName, setFileName] = useState("");
+  const [resumeFile, setResumeFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
 
   const handleLogout = () => {
     localStorage.clear();
@@ -14,9 +18,43 @@ const Dashboard = () => {
 
   const handleFileChange = (e) => {
     if (e.target.files[0]) {
+      setUploadMessage("");
+      setResumeFile(e.target.files[0]);
       setFileName(e.target.files[0].name);
     }
   };
+
+  const handleResumeUpload = async () => {
+    if (!resumeFile) {
+      setUploadMessage("Please choose a resume file first.");
+      return;
+    }
+
+    setUploading(true);
+    setUploadMessage("");
+
+    try {
+      const resumeText = await resumeFile.text();
+      const response = await uploadResume(resumeText);
+      setUploadMessage(response.data?.message || "Resume uploaded successfully.");
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.response?.data ||
+        "Resume upload failed.";
+      setUploadMessage(typeof message === "string" ? message : "Resume upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const navItems = [
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Jobs", path: "/jobs" },
+    { label: "Applications", path: "/applications" },
+    { label: "Profile", path: "/profile" },
+    { label: "Settings", path: "/settings" },
+  ];
 
   return (
     <div className="dashboard-container">
@@ -26,11 +64,16 @@ const Dashboard = () => {
         <h1 className="logo">SmartHire AI</h1>
 
         <nav>
-          <a className="active" onClick={() => navigate("/dashboard")}>Dashboard</a>
-          <a onClick={() => navigate("/jobs")}>Jobs</a>
-          <a onClick={() => navigate("/applications")}>Applications</a>
-          <a onClick={() => navigate("/profile")}>Profile</a>
-          <a onClick={() => navigate("/settings")}>Settings</a>
+          {navItems.map((item) => (
+            <button
+              key={item.path}
+              type="button"
+              className={item.path === "/dashboard" ? "active" : ""}
+              onClick={() => navigate(item.path)}
+            >
+              {item.label}
+            </button>
+          ))}
         </nav>
 
         <div>
@@ -185,14 +228,17 @@ const Dashboard = () => {
               <p>AI will analyze your resume</p>
 
               {/* CUSTOM FILE UPLOAD */}
-              <label className="custom-file">
+              <label className="custom-upload">
                 Choose Resume
-                <input type="file" onChange={handleFileChange}/>
+                <input type="file" accept=".pdf,.doc,.docx,.txt" onChange={handleFileChange} />
               </label>
 
               {fileName && <p className="file-name">{fileName}</p>}
+              {uploadMessage && <p className="upload-message">{uploadMessage}</p>}
 
-              <button>Upload</button>
+              <button type="button" onClick={handleResumeUpload} disabled={uploading}>
+                {uploading ? "Uploading..." : "Upload"}
+              </button>
             </div>
 
             {/* ACTIVITY */}
