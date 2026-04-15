@@ -9,12 +9,13 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    // Find a user by email
+    // ✅ Find user by email
     Optional<User> findByEmail(String email);
 
-    // Check if a user exists by email
+    // ✅ Check if user exists
     boolean existsByEmail(String email);
 
+    // Optional features (keep if used)
     Optional<User> findByVerificationToken(String token);
 
     Optional<User> findByPasswordResetToken(String token);

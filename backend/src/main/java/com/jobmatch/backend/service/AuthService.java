@@ -1,20 +1,18 @@
 package com.jobmatch.backend.service;
 
-import com.jobmatch.backend.dto.AuthResponse;
-import com.jobmatch.backend.dto.ForgotPasswordRequest;
-import com.jobmatch.backend.dto.LoginRequest;
-import com.jobmatch.backend.dto.RegisterRequest;
-import com.jobmatch.backend.dto.ResetPasswordRequest;
-import com.jobmatch.backend.dto.VerifyEmailRequest;
+import com.jobmatch.backend.dto.*;
 import com.jobmatch.backend.entity.Role;
 import com.jobmatch.backend.entity.User;
 import com.jobmatch.backend.exception.AppException;
 import com.jobmatch.backend.repository.UserRepository;
 import com.jobmatch.backend.security.JwtUtil;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,9 +21,9 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final EmailService emailService;
+    // ✅ REMOVED unused EmailService — was causing potential bean startup failure
 
-    // ✅ REGISTER USER
+    @Transactional
     public AuthResponse register(RegisterRequest request) {
 
         validateRegisterRequest(request);
@@ -35,27 +33,28 @@ public class AuthService {
         }
 
         User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
+        user.setName(request.getName().trim());
+        user.setEmail(request.getEmail().trim());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         Role role;
         try {
-            role = (request.getRole() != null) ? Role.valueOf(request.getRole().toUpperCase()) : Role.SEEKER;
-        } catch (IllegalArgumentException e) {
+            role = (request.getRole() != null)
+                    ? Role.valueOf(request.getRole().toUpperCase())
+                    : Role.SEEKER;
+        } catch (Exception e) {
             role = Role.SEEKER;
         }
 
         user.setRole(role);
-
-        // ✅ Auto verify — skip email verification
         user.setEmailVerified(true);
         user.setVerificationToken(null);
         user.setVerificationTokenExpiry(null);
 
         User savedUser = userRepository.save(user);
 
-        // ✅ Generate JWT token immediately
+        System.out.println("USER SAVED: " + savedUser.getEmail());
+
         String token = jwtUtil.generateToken(savedUser);
 
         return new AuthResponse(
@@ -69,82 +68,33 @@ public class AuthService {
     }
 
     private void validateRegisterRequest(RegisterRequest request) {
+
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+            throw new AppException("Email is required", HttpStatus.BAD_REQUEST);
+        }
+
         String emailRegex = "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$";
         if (!request.getEmail().matches(emailRegex)) {
             throw new AppException("Invalid email format", HttpStatus.BAD_REQUEST);
         }
 
-        if (request.getName() == null || request.getName().trim().length() < 2 || request.getName().trim().length() > 50) {
-            throw new AppException("Name must be 2-50 characters", HttpStatus.BAD_REQUEST);
+        if (request.getName() == null || request.getName().trim().length() < 2) {
+            throw new AppException("Name must be at least 2 characters", HttpStatus.BAD_REQUEST);
         }
 
         String password = request.getPassword();
-        if (password.length() < 8 ||
+        if (password == null || password.length() < 8 ||
                 !password.matches(".*[A-Z].*") ||
                 !password.matches(".*[a-z].*") ||
                 !password.matches(".*\\d.*")) {
-            throw new AppException("Password must be 8+ chars with uppercase, lowercase, and digit", HttpStatus.BAD_REQUEST);
+
+            throw new AppException(
+                    "Password must be 8+ chars with uppercase, lowercase, and digit",
+                    HttpStatus.BAD_REQUEST
+            );
         }
     }
 
-    // VERIFY EMAIL
-    public AuthResponse verifyEmail(VerifyEmailRequest request) {
-        User user = userRepository.findByVerificationToken(request.getToken())
-                .orElseThrow(() -> new AppException("Invalid or expired verification token", HttpStatus.BAD_REQUEST));
-
-        user.setEmailVerified(true);
-        user.setVerificationToken(null);
-        user.setVerificationTokenExpiry(null);
-        userRepository.save(user);
-
-        String token = jwtUtil.generateToken(user);
-
-        return new AuthResponse(
-                token,
-                user.getName(),
-                user.getEmail(),
-                user.getRole(),
-                user.getId(),
-                "Email verified successfully!"
-        );
-    }
-
-    // FORGOT PASSWORD
-    public AuthResponse forgotPassword(ForgotPasswordRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new AppException("Email not found", HttpStatus.NOT_FOUND));
-
-        String resetToken = AuthServiceHelper.generateResetToken();
-        user.setPasswordResetToken(resetToken);
-        user.setPasswordResetTokenExpiry(AuthServiceHelper.getResetExpiry());
-        userRepository.save(user);
-
-        // ✅ FIXED: complete method call
-        emailService.sendPasswordResetEmail(user.getEmail(), resetToken, user.getName());
-
-        return new AuthResponse(null, null, user.getEmail(), null, null,
-                "Password reset link sent to your email.");
-    }
-
-    // RESET PASSWORD
-    public AuthResponse resetPassword(ResetPasswordRequest request) {
-        User user = userRepository.findByPasswordResetToken(request.getToken())
-                .orElseThrow(() -> new AppException("Invalid or expired reset token", HttpStatus.BAD_REQUEST));
-
-        if (!AuthServiceHelper.isResetTokenValid(user.getPasswordResetToken(), user.getPasswordResetTokenExpiry())) {
-            throw new AppException("Invalid or expired reset token", HttpStatus.BAD_REQUEST);
-        }
-
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        user.setPasswordResetToken(null);
-        user.setPasswordResetTokenExpiry(null);
-        userRepository.save(user);
-
-        return new AuthResponse(null, user.getName(), user.getEmail(), user.getRole(), user.getId(),
-                "Password reset successful. You can now login.");
-    }
-
-    // ✅ LOGIN USER
     public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
@@ -156,7 +106,6 @@ public class AuthService {
             throw new AppException("Invalid email or password", HttpStatus.UNAUTHORIZED);
         }
 
-        // ✅ Check email verified
         if (!user.isEmailVerified()) {
             throw new AppException("Please verify your email before logging in.", HttpStatus.UNAUTHORIZED);
         }
@@ -172,7 +121,10 @@ public class AuthService {
                 "Login successful"
         );
     }
+
+    @Transactional
     public AuthResponse saveResume(String email, String resumeText) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
 

@@ -1,35 +1,47 @@
 package com.jobmatch.backend.controller;
 
 import com.jobmatch.backend.entity.Job;
-import com.jobmatch.backend.repository.JobRepository;
-import lombok.RequiredArgsConstructor;
+import com.jobmatch.backend.service.JobService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.annotation.PostConstruct;
+
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/jobs")
-@RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "http://localhost:3008"})
 public class JobController {
 
-    private final JobRepository jobRepository;
+    @Autowired
+    private JobService jobService;
 
+    // POST /api/v1/jobs — Recruiter only
+    @PostMapping
+    public ResponseEntity<Job> createJob(@RequestBody Job job, HttpServletRequest request) {
+        String role = (String) request.getAttribute("role");
+        Long recruiterId = (Long) request.getAttribute("userId"); // your JWT filter sets this
+        Job created = jobService.createJob(job, role, recruiterId);
+        return ResponseEntity.status(201).body(created);
+    }
+
+    // GET /api/v1/jobs — Any logged-in user
     @GetMapping
     public ResponseEntity<List<Job>> getAllJobs() {
-        List<Job> jobs = jobRepository.findAll();
-        return ResponseEntity.ok(List.copyOf(jobs));
+        return ResponseEntity.ok(jobService.getAllJobs());
     }
 
-    @PostConstruct
-    public void seedData() {
-        long count = jobRepository.count();
-        if (count == 0) {
-            Job job1 = new Job(null, "Senior Software Engineer", "TechCorp", "Fullstack developer with Java, React, Spring Boot experience. Job matching platform development.", "New York, NY", "$140k - $160k", 1L, null);
-            Job job2 = new Job(null, "Frontend Developer", "StartupX", "React.js specialist for dashboard and auth flows.", "Remote", "$100k - $120k", 2L, null);
-            jobRepository.saveAll(List.of(job1, job2));
-        }
+    // GET /api/v1/jobs/my-jobs — Recruiter only (MUST be above /{id})
+    @GetMapping("/my-jobs")
+    public ResponseEntity<List<Job>> getMyJobs(HttpServletRequest request) {
+        String role = (String) request.getAttribute("role");
+        Long recruiterId = (Long) request.getAttribute("userId");
+        return ResponseEntity.ok(jobService.getMyJobs(role, recruiterId));
+    }
+
+    // GET /api/v1/jobs/{id} — Any logged-in user
+    @GetMapping("/{id}")
+    public ResponseEntity<Job> getJobById(@PathVariable Long id) {
+        return ResponseEntity.ok(jobService.getJobById(id));
     }
 }
-
