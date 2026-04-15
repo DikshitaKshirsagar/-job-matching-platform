@@ -2,3 +2,6 @@ backend/backend-run.log
 backend/backend-run.err.log
 backend/data/jobmatchdb.lock.db
 .vscode/
+.idea/
+TODO.md
+backend/src/test/resources/
