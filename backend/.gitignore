@@ -1,10 +1,19 @@
+# ===============================
+# Spring Boot / Java
+# ===============================
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### STS ###
+# Logs
+logs/
+*.log
+
+# ===============================
+# STS / Eclipse
+# ===============================
 .apt_generated
 .classpath
 .factorypath
@@ -13,13 +22,17 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
+# ===============================
+# IntelliJ IDEA
+# ===============================
+.idea/
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# ===============================
+# NetBeans
+# ===============================
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -29,5 +42,27 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
+# ===============================
+# VS Code
+# ===============================
 .vscode/
+
+# ===============================
+# Python (AI Service)
+# ===============================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ===============================
+# Environment Files
+# ===============================
+.env
+.env.*
+
+# ===============================
+# OS Files
+# ===============================
+.DS_Store
+Thumbs.db
