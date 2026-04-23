@@ -6,29 +6,28 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import org.springframework.beans.factory.annotation.Value;
+import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    // ✅ NOTE: Move this to application.properties in production — never hardcode secrets
-    private final Key SECRET = Keys.hmacShaKeyFor(
-            "mysecretkeymysecretkeymysecretkey12345".getBytes()
-    );
+    @Value("${jwt.secret:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
+    private String jwtSecret;
 
-    private final long EXPIRATION = 24 * 60 * 60 * 1000; // 1 day
+    @Value("${jwt.expiration:86400000}")
+    private long expiration;
 
     public String generateToken(User user) {
         return Jwts.builder()
                 .setSubject(user.getEmail())
                 .claim("userId", user.getId())
-                // ✅ FIXED: store role as a String (enum name), not the enum object itself
-                // Storing the enum directly can serialize to an object map that fails on extraction
                 .claim("role", user.getRole() != null ? user.getRole().name() : null)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(SECRET, SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -49,7 +48,7 @@ public class JwtUtil {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET)
+                .setSigningKey(getSignKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
@@ -65,7 +64,6 @@ public class JwtUtil {
 
     public String extractRole(String token) {
         try {
-            // ✅ Now safely extracted as String since we stored it as .name()
             return extractAllClaims(token).get("role", String.class);
         } catch (Exception e) {
             return null;
@@ -79,5 +77,9 @@ public class JwtUtil {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private Key getSignKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 }

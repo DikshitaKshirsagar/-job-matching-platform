@@ -1,6 +1,8 @@
 package com.jobmatch.backend.controller;
 
+import com.jobmatch.backend.dto.ApplicationResponse;
 import com.jobmatch.backend.entity.Job;
+import com.jobmatch.backend.service.ApplicationService;
 import com.jobmatch.backend.service.JobService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/jobs")
 public class JobController {
@@ -16,15 +17,17 @@ public class JobController {
     @Autowired
     private JobService jobService;
 
+    @Autowired
+    private ApplicationService applicationService; // ← ADD THIS
+
     // POST /api/v1/jobs — Recruiter only
     @PostMapping
     public ResponseEntity<Job> createJob(@RequestBody Job job, HttpServletRequest request) {
         String role = (String) request.getAttribute("role");
-        Long recruiterId = (Long) request.getAttribute("userId"); // your JWT filter sets this
+        Long recruiterId = (Long) request.getAttribute("userId");
         Job created = jobService.createJob(job, role, recruiterId);
         return ResponseEntity.status(201).body(created);
     }
-
     // GET /api/v1/jobs — Any logged-in user
     @GetMapping
     public ResponseEntity<List<Job>> getAllJobs() {
@@ -43,5 +46,13 @@ public class JobController {
     @GetMapping("/{id}")
     public ResponseEntity<Job> getJobById(@PathVariable Long id) {
         return ResponseEntity.ok(jobService.getJobById(id));
+    }
+
+    // ✅ GET /api/v1/jobs/{jobId}/applicants — Recruiter only (NEW - was missing!)
+    @GetMapping("/{jobId}/applicants")
+    public ResponseEntity<List<ApplicationResponse>> getApplicants(
+            @PathVariable Long jobId) {
+        List<ApplicationResponse> applicants = applicationService.getApplicationsByJob(jobId);
+        return ResponseEntity.ok(applicants);
     }
 }

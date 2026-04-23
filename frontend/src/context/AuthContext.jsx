@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
       setUser({
         role: authData.role,
         name: authData.name,
+        email: authData.email,
         userId: authData.userId
       });
     }
@@ -34,6 +35,7 @@ export const AuthProvider = ({ children }) => {
     setUser({
       role: userData.role,
       name: userData.name,
+      email: userData.email,
       userId: userData.userId
     });
     return userData;

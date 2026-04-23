@@ -16,6 +16,7 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,28 +34,29 @@ public class UserService {
     private final ApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
 
-    // ✅ Get current logged-in user (FIXED)
+    @Value("${app.resume.max-size:10485760}")
+    private long maxFileSize;
+
+    @Value("${app.resume.max-text-length:100000}")
+    private int maxTextLength;
+
+    // ✅ Get current logged-in user
     public User getCurrentUser() {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // ❗ VERY IMPORTANT CHECKS
         if (authentication == null || !authentication.isAuthenticated()
-                || authentication.getPrincipal().equals("anonymousUser")) {
+                || "anonymousUser".equals(authentication.getPrincipal())) {
             throw new AppException("User not authenticated", HttpStatus.UNAUTHORIZED);
         }
 
         String email = authentication.getName();
 
-        if (email == null || email.equals("anonymousUser")) {
-            throw new AppException("Invalid user", HttpStatus.UNAUTHORIZED);
-        }
-
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
     }
 
-    // ✅ Get user profile
+    // ✅ Get user profile (MATCH DTO)
     public UserProfileResponse getUserProfile() {
 
         User user = getCurrentUser();
@@ -64,18 +66,21 @@ public class UserService {
                 user.getName(),
                 user.getEmail(),
                 user.getRole(),
-                user.getResumeFileName(),
-                user.getResumeText() != null && !user.getResumeText().trim().isEmpty(),
-                user.getCreatedAt()
+                null, // resumeFileName - add if needed
+                user.getResumeText() != null && !user.getResumeText().isBlank(),
+                user.getCreatedAt() // assume exists
         );
     }
 
-    // ✅ Get dashboard data
+    // ✅ Dashboard
     public DashboardResponse getDashboard() {
+
         User user = getCurrentUser();
-        long totalApplications = applicationRepository.findByUserId(user.getId()).size();
+
+        long totalApplications = applicationRepository.findByUser(user).size();
         long totalJobs = jobRepository.count();
-        boolean resumeUploaded = user.getResumeText() != null && !user.getResumeText().trim().isEmpty();
+        boolean resumeUploaded = user.getResumeText() != null && !user.getResumeText().isBlank();
+
         return new DashboardResponse(
                 user.getName(),
                 user.getEmail(),
@@ -85,49 +90,52 @@ public class UserService {
         );
     }
 
-    // ✅ Upload Resume API
+    // ✅ Upload Resume (CORRECTED)
     public ResumeUploadResponse uploadResume(MultipartFile file) {
 
         if (file == null || file.isEmpty()) {
-            throw new AppException("File is empty", HttpStatus.BAD_REQUEST);
+            throw new AppException("No file provided", HttpStatus.BAD_REQUEST);
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename == null || !filename.toLowerCase().endsWith(".pdf")) {
+            throw new AppException("Only PDF files (.pdf) are allowed", HttpStatus.BAD_REQUEST);
         }
 
         String contentType = file.getContentType();
-        if (contentType == null || !contentType.contains("pdf")) {
-            throw new AppException("Only PDF files are allowed", HttpStatus.BAD_REQUEST);
+        if (contentType == null || !contentType.equals("application/pdf")) {
+            throw new AppException("Invalid PDF content type: " + contentType, HttpStatus.BAD_REQUEST);
         }
 
-        if (file.getSize() > 10 * 1024 * 1024) {
-            throw new AppException("File size exceeds 10MB limit", HttpStatus.BAD_REQUEST);
+        if (file.getSize() > maxFileSize) {
+            throw new AppException("File size " + file.getSize() + " exceeds " + (maxFileSize/1024/1024) + "MB limit", HttpStatus.BAD_REQUEST);
         }
 
         User user = getCurrentUser();
 
         try {
             String extractedText = extractTextFromPDF(file);
+            String trimmedText = extractedText.trim();
+            if (trimmedText.length() > maxTextLength) {
+                trimmedText = trimmedText.substring(0, maxTextLength);
+                log.warn("Resume text truncated to {} chars for user {}", maxTextLength, user.getEmail());
+            }
 
-            user.setResumeText(extractedText);
-            user.setResumeFileName(file.getOriginalFilename());
-
+            user.setResumeText(trimmedText);
             userRepository.save(user);
 
-            log.info("Resume uploaded successfully for user: {}", user.getEmail());
+            log.info("Resume uploaded: {} ({} bytes, {} chars) for {}", filename, file.getSize(), trimmedText.length(), user.getEmail());
 
             return new ResumeUploadResponse(
                     "Resume uploaded successfully",
-                    file.getOriginalFilename(),
+                    filename,
                     file.getSize(),
                     true
             );
 
         } catch (IOException e) {
-
-            log.error("Error processing PDF for user: {}", user.getEmail(), e);
-
-            throw new AppException(
-                    "Error processing PDF file: " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            log.error("PDF processing failed for {}: {}", filename, e.getMessage(), e);
+            throw new AppException("Failed to extract text from PDF: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -142,7 +150,7 @@ public class UserService {
             String text = stripper.getText(document);
 
             if (text == null || text.trim().isEmpty()) {
-                throw new IOException("PDF contains no readable text");
+                throw new IOException("PDF contains no extractable text (scanned image?)");
             }
 
             return text;

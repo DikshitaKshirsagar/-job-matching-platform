@@ -1,6 +1,8 @@
 package com.jobmatch.backend.service;
 
-import com.jobmatch.backend.dto.*;
+import com.jobmatch.backend.dto.AuthResponse;
+import com.jobmatch.backend.dto.LoginRequest;
+import com.jobmatch.backend.dto.RegisterRequest;
 import com.jobmatch.backend.entity.Role;
 import com.jobmatch.backend.entity.User;
 import com.jobmatch.backend.exception.AppException;
@@ -21,26 +23,25 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    // ✅ REMOVED unused EmailService — was causing potential bean startup failure
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-
         validateRegisterRequest(request);
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        String normalizedEmail = request.getEmail().trim().toLowerCase();
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new AppException("Email already exists", HttpStatus.BAD_REQUEST);
         }
 
         User user = new User();
         user.setName(request.getName().trim());
-        user.setEmail(request.getEmail().trim());
+        user.setEmail(normalizedEmail);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         Role role;
         try {
-            role = (request.getRole() != null)
-                    ? Role.valueOf(request.getRole().toUpperCase())
+            role = request.getRole() != null
+                    ? Role.valueOf(request.getRole().trim().toUpperCase())
                     : Role.SEEKER;
         } catch (Exception e) {
             role = Role.SEEKER;
@@ -52,9 +53,6 @@ public class AuthService {
         user.setVerificationTokenExpiry(null);
 
         User savedUser = userRepository.save(user);
-
-        System.out.println("USER SAVED: " + savedUser.getEmail());
-
         String token = jwtUtil.generateToken(savedUser);
 
         return new AuthResponse(
@@ -68,13 +66,16 @@ public class AuthService {
     }
 
     private void validateRegisterRequest(RegisterRequest request) {
+        if (request == null) {
+            throw new AppException("Request body is required", HttpStatus.BAD_REQUEST);
+        }
 
         if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
             throw new AppException("Email is required", HttpStatus.BAD_REQUEST);
         }
 
         String emailRegex = "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$";
-        if (!request.getEmail().matches(emailRegex)) {
+        if (!request.getEmail().trim().matches(emailRegex)) {
             throw new AppException("Invalid email format", HttpStatus.BAD_REQUEST);
         }
 
@@ -83,11 +84,10 @@ public class AuthService {
         }
 
         String password = request.getPassword();
-        if (password == null || password.length() < 8 ||
-                !password.matches(".*[A-Z].*") ||
-                !password.matches(".*[a-z].*") ||
-                !password.matches(".*\\d.*")) {
-
+        if (password == null || password.length() < 8
+                || !password.matches(".*[A-Z].*")
+                || !password.matches(".*[a-z].*")
+                || !password.matches(".*\\d.*")) {
             throw new AppException(
                     "Password must be 8+ chars with uppercase, lowercase, and digit",
                     HttpStatus.BAD_REQUEST
@@ -96,11 +96,13 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        if (request == null || request.getEmail() == null || request.getEmail().trim().isEmpty()
+                || request.getPassword() == null || request.getPassword().isEmpty()) {
+            throw new AppException("Email and password are required", HttpStatus.BAD_REQUEST);
+        }
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() ->
-                        new AppException("Invalid email or password", HttpStatus.UNAUTHORIZED)
-                );
+        User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
+                .orElseThrow(() -> new AppException("Invalid email or password", HttpStatus.UNAUTHORIZED));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new AppException("Invalid email or password", HttpStatus.UNAUTHORIZED);
@@ -124,7 +126,6 @@ public class AuthService {
 
     @Transactional
     public AuthResponse saveResume(String email, String resumeText) {
-
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
 

@@ -13,8 +13,6 @@ const Applications = () => {
   const fetchApplications = async () => {
     try {
       const res = await getApplications();
-
-      // ✅ FIX: handle backend response safely
       setApplications(res.data?.data || res.data || []);
     } catch (err) {
       console.error("Error fetching applications:", err);
@@ -25,8 +23,7 @@ const Applications = () => {
 
   return (
     <div className="applications-page">
-
-      <h2>Your Applications 📄</h2>
+      <h2>Your Applications</h2>
 
       {loading ? (
         <p>Loading...</p>
@@ -34,17 +31,15 @@ const Applications = () => {
         <p>No applications yet</p>
       ) : (
         <div className="applications-container">
-
           {applications.map((app) => (
             <div className="application-card" key={app.id}>
-
               <div className="app-left">
                 <img
                   src={`https://logo.clearbit.com/${app.company?.toLowerCase()}.com`}
                   alt="logo"
-                  onError={(e) =>
-                    (e.target.src = "https://via.placeholder.com/50")
-                  }
+                  onError={(e) => {
+                    e.target.src = "https://via.placeholder.com/50";
+                  }}
                 />
 
                 <div>
@@ -58,13 +53,10 @@ const Applications = () => {
                   {app.status || "Pending"}
                 </span>
               </div>
-
             </div>
           ))}
-
         </div>
       )}
-
     </div>
   );
 };

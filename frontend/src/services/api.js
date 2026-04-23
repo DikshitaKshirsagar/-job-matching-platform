@@ -59,8 +59,8 @@ API.interceptors.response.use(
 export const loginUser = (data) => API.post("/auth/login", data);
 export const registerUser = (data) => API.post("/auth/register", data);
 export const getJobs = () => API.get("/jobs");
-export const applyJob = (data) => API.post("/applications", data);
-export const getApplications = () => API.get("/applications");
+export const applyJob = (data) => API.post("/applications/apply", data);
+export const getApplications = () => API.get("/applications/my");
 export const uploadResume = (resumeText) =>
   API.post("/auth/resume", { resumeText });
 

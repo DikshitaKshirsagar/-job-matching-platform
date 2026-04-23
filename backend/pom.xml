@@ -91,11 +91,17 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- PDFBox 3.x -->
+		<!-- PDFBox 3.x — commons-logging excluded to avoid conflict with spring-jcl -->
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
 			<version>3.0.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Testing -->
@@ -131,7 +137,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-
 
 		</plugins>
 	</build>

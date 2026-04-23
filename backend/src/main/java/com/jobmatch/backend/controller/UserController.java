@@ -1,19 +1,16 @@
 package com.jobmatch.backend.controller;
 
 import com.jobmatch.backend.dto.DashboardResponse;
-import com.jobmatch.backend.dto.ErrorResponse;
 import com.jobmatch.backend.dto.ResumeUploadResponse;
 import com.jobmatch.backend.dto.UserProfileResponse;
 import com.jobmatch.backend.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -23,55 +20,30 @@ public class UserController {
 
     private final UserService userService;
 
-    // ✅ GET DASHBOARD
+    // ✅ Dashboard
     @GetMapping("/dashboard")
-    public ResponseEntity<?> getDashboard() {
-        try {
-            DashboardResponse response = userService.getDashboard();
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<DashboardResponse> getDashboard() {
+        return ResponseEntity.ok(userService.getDashboard());
     }
 
-    // ✅ GET PROFILE
+    // ✅ Profile
     @GetMapping("/profile")
-    public ResponseEntity<?> getUserProfile() {
-        try {
-            UserProfileResponse response = userService.getUserProfile();
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<UserProfileResponse> getUserProfile() {
+        return ResponseEntity.ok(userService.getUserProfile());
     }
 
-    // ✅ UPLOAD RESUME
+    // ✅ Upload Resume
     @PostMapping("/upload-resume")
-    public ResponseEntity<?> uploadResume(@RequestParam("file") MultipartFile file) {
-        try {
-            ResumeUploadResponse response = userService.uploadResume(file);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<ResumeUploadResponse> uploadResume(
+            @RequestParam("file") MultipartFile file) {
+
+        return ResponseEntity.ok(userService.uploadResume(file));
     }
 
-    // 🔥🔥 TEMPORARY DEBUG API (VERY IMPORTANT)
+    // ✅ Debug (optional)
     @GetMapping("/debug")
-    public ResponseEntity<?> debug() {
-        try {
-            String user = SecurityContextHolder.getContext()
-                    .getAuthentication()
-                    .getName();
-
-            return ResponseEntity.ok(user);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<String> debug(Authentication authentication) {
+        String user = (authentication != null) ? authentication.getName() : "anonymousUser";
+        return ResponseEntity.ok(user);
     }
 }

@@ -1,0 +1,12 @@
+name: JobMatch
+values:
+  - key: baseUrl
+    value: ""
+    enabled: true
+  - key: seekerToken
+    value: ""
+    enabled: true
+  - key: recruiterToken
+    value: ""
+    enabled: true
+color: null

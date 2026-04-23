@@ -78,15 +78,11 @@ const Register = () => {
 
     try {
       await authService.register(formData);
-
-      // ✅ Show success message
       setSuccessMessage("Account created successfully! Redirecting to login...");
 
-      // ✅ Redirect to login after 2 seconds
       setTimeout(() => {
         navigate("/login");
       }, 2000);
-
     } catch (err) {
       const message =
         err.response?.data?.message ||
@@ -108,25 +104,29 @@ const Register = () => {
           <div className="logo-mark">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
               <rect width="32" height="32" rx="8" fill="#6C63FF" />
-              <path d="M8 22L14 10L20 18L24 14" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M8 22L14 10L20 18L24 14"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
           <h1 className="register-title">Create your account</h1>
           <p className="register-subtitle">Join thousands finding their dream jobs</p>
         </div>
 
-        {/* ✅ Success Message */}
         {successMessage && (
           <div className="alert alert-success">
-            <span className="alert-icon">✓</span>
+            <span className="alert-icon">OK</span>
             {successMessage}
           </div>
         )}
 
-        {/* ✅ API Error */}
         {apiError && (
           <div className="alert alert-error">
-            <span className="alert-icon">✕</span>
+            <span className="alert-icon">!</span>
             {apiError}
           </div>
         )}

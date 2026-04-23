@@ -19,9 +19,13 @@ const PublicRoute = ({ children }) => {
 };
 
 function App() {
+  const token = localStorage.getItem("token");
+
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
+
         <Route
           path="/login"
           element={
@@ -76,7 +80,7 @@ function App() {
           }
         />
 
-        <Route path="*" element={<Navigate to="/dashboard" />} />
+        <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
       </Routes>
     </Router>
   );

@@ -7,11 +7,12 @@ export const authService = {
       email:    credentials.email,
       password: credentials.password,
     });
-    const { token, role, name, userId } = response.data;
+    const { token, role, name, userId, email } = response.data;
     localStorage.setItem('token', token);
     localStorage.setItem('role', role);
     localStorage.setItem('name', name);
     localStorage.setItem('userId', userId);
+    localStorage.setItem('email', email || credentials.email);
     return response.data;
   },
 
@@ -35,6 +36,7 @@ export const authService = {
       token:  localStorage.getItem('token'),
       role:   localStorage.getItem('role'),
       name:   localStorage.getItem('name'),
+      email:  localStorage.getItem('email'),
       userId: localStorage.getItem('userId'),
     };
   },

@@ -1,14 +1,13 @@
 package com.jobmatch.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "applications")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Application {
@@ -17,23 +16,28 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long userId;
+    // ✅ Many applications -> one user
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @Column(nullable = false)
-    private Long jobId;
+    // ✅ Many applications -> one job
+    @ManyToOne
+    @JoinColumn(name = "job_id")
+    private Job job;
 
+    // ✅ AI match score
     private Double matchScore;
 
-    @Column(nullable = false)
+    // ✅ Application status
     private String status;
 
-    @Column(nullable = false, updatable = false)
+    // ✅ Timestamp
     private LocalDateTime appliedAt;
 
+    // ✅ Auto set time before saving
     @PrePersist
-    protected void onCreate() {
-        appliedAt = LocalDateTime.now();
-        if (status == null) status = "APPLIED";
+    public void prePersist() {
+        this.appliedAt = LocalDateTime.now();
     }
 }

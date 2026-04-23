@@ -14,8 +14,6 @@ const Jobs = () => {
   const fetchJobs = async () => {
     try {
       const res = await getJobs();
-
-      // ✅ IMPORTANT FIX (backend may send wrapped data)
       setJobs(res.data?.data || res.data || []);
     } catch (err) {
       console.error("Error fetching jobs:", err);
@@ -34,11 +32,10 @@ const Jobs = () => {
       }
 
       await applyJob({ userId, jobId });
-
-      alert("✅ Applied Successfully!");
+      alert("Applied successfully.");
     } catch (err) {
       console.error("Apply error:", err);
-      alert("❌ Failed to apply");
+      alert("Failed to apply.");
     }
   };
 
@@ -48,9 +45,8 @@ const Jobs = () => {
 
   return (
     <div className="jobs-page">
-
       <div className="jobs-header">
-        <h2>Find Your Dream Job 🚀</h2>
+        <h2>Find Your Dream Job</h2>
 
         <input
           type="text"
@@ -64,27 +60,24 @@ const Jobs = () => {
         <p className="loading">Loading jobs...</p>
       ) : (
         <div className="jobs-container">
-
           {filteredJobs.length === 0 ? (
             <p className="no-jobs">No jobs found</p>
           ) : (
             filteredJobs.map((job) => (
               <div className="job-card" key={job.id}>
-
                 <div className="job-left">
                   <img
                     src={`https://logo.clearbit.com/${job.company?.toLowerCase()}.com`}
                     alt="logo"
-                    onError={(e) =>
-                      (e.target.src =
-                        "https://via.placeholder.com/50?text=Logo")
-                    }
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/50?text=Logo";
+                    }}
                   />
 
                   <div>
                     <h3>{job.title}</h3>
                     <p>
-                      {job.company} • {job.location}
+                      {job.company} | {job.location}
                     </p>
                   </div>
                 </div>
@@ -94,15 +87,11 @@ const Jobs = () => {
                     {job.salary ? job.salary : "Not Disclosed"}
                   </span>
 
-                  <button onClick={() => handleApply(job.id)}>
-                    Apply
-                  </button>
+                  <button onClick={() => handleApply(job.id)}>Apply</button>
                 </div>
-
               </div>
             ))
           )}
-
         </div>
       )}
     </div>
