@@ -1,9 +1,10 @@
 import "./LoginPage.css";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,8 +17,8 @@ function Login() {
     setLoading(true);
 
     try {
-      await login({ email, password });
-      window.location.href = "/dashboard";
+      const response = await login({ email, password });
+      navigate(response.role === "RECRUITER" ? "/recruiter" : "/dashboard");
     } catch (err) {
       const message =
         err.response?.data?.message ||

@@ -1,0 +1,117 @@
+.profile-shell {
+  min-height: 100vh;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(96, 214, 255, 0.15), transparent 28%),
+    linear-gradient(180deg, #07111d 0%, #0f1b2f 100%);
+  color: #f4f7ff;
+}
+
+.profile-page {
+  max-width: 1100px;
+  margin: 24px auto 0;
+  display: grid;
+  gap: 24px;
+}
+
+.profile-card,
+.resume-card {
+  background: rgba(10, 18, 32, 0.78);
+  border: 1px solid rgba(152, 178, 255, 0.14);
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+}
+
+.profile-kicker {
+  margin: 0 0 10px;
+  color: #8eddb1;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+}
+
+.profile-card h2,
+.resume-card h3 {
+  margin: 0;
+}
+
+.profile-grid {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.profile-grid div {
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.profile-grid span {
+  display: block;
+  margin-bottom: 8px;
+  color: #95a2c8;
+  font-size: 0.88rem;
+}
+
+.resume-card {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.resume-picker {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px dashed rgba(151, 212, 255, 0.45);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+}
+
+.resume-picker input {
+  display: none;
+}
+
+.progress-track {
+  margin-top: 14px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #88f3ff, #81df9b);
+}
+
+.profile-message {
+  color: #f6de8b;
+}
+
+.resume-card button {
+  margin-top: 14px;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a0edff, #f6df8a);
+  color: #06111d;
+  cursor: pointer;
+}
+
+.profile-loading {
+  text-align: center;
+}
+
+@media (max-width: 820px) {
+  .resume-card {
+    grid-template-columns: 1fr;
+  }
+}

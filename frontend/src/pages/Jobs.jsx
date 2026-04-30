@@ -1,99 +1,142 @@
 import React, { useEffect, useState } from "react";
 import "./Jobs.css";
-import { getJobs, applyJob } from "../services/api";
+import Navbar from "../components/Navbar";
+import SkeletonCard from "../components/SkeletonCard";
+import { applyJob, getJobs } from "../services/api";
+
+const getMatchTone = (score) => {
+  if (score == null) {
+    return "neutral";
+  }
+
+  if (score >= 80) {
+    return "high";
+  }
+
+  if (score >= 50) {
+    return "medium";
+  }
+
+  return "low";
+};
 
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [applyingJobId, setApplyingJobId] = useState(null);
 
   useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const response = await getJobs();
+        setJobs(response.data || []);
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchJobs();
   }, []);
 
-  const fetchJobs = async () => {
-    try {
-      const res = await getJobs();
-      setJobs(res.data?.data || res.data || []);
-    } catch (err) {
-      console.error("Error fetching jobs:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleApply = async (jobId) => {
     try {
-      const userId = localStorage.getItem("userId");
-
-      if (!userId) {
-        alert("Please login again");
-        return;
-      }
-
-      await applyJob({ userId, jobId });
+      setApplyingJobId(jobId);
+      await applyJob({ jobId });
       alert("Applied successfully.");
-    } catch (err) {
-      console.error("Apply error:", err);
-      alert("Failed to apply.");
+    } catch (error) {
+      const message = error.response?.data?.message || "Failed to apply.";
+      alert(message);
+    } finally {
+      setApplyingJobId(null);
     }
   };
 
-  const filteredJobs = jobs.filter((job) =>
-    job.title?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredJobs = jobs.filter((job) => {
+    const haystack = `${job.title || ""} ${job.company || ""} ${job.location || ""}`.toLowerCase();
+    return haystack.includes(search.toLowerCase());
+  });
 
   return (
-    <div className="jobs-page">
-      <div className="jobs-header">
-        <h2>Find Your Dream Job</h2>
+    <div className="jobs-shell">
+      <Navbar />
 
-        <input
-          type="text"
-          placeholder="Search jobs..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+      <div className="jobs-page">
+        <div className="jobs-header">
+          <div>
+            <p className="jobs-kicker">Seeker Workspace</p>
+            <h2>Find Your Dream Job</h2>
+          </div>
 
-      {loading ? (
-        <p className="loading">Loading jobs...</p>
-      ) : (
-        <div className="jobs-container">
-          {filteredJobs.length === 0 ? (
-            <p className="no-jobs">No jobs found</p>
-          ) : (
-            filteredJobs.map((job) => (
-              <div className="job-card" key={job.id}>
-                <div className="job-left">
-                  <img
-                    src={`https://logo.clearbit.com/${job.company?.toLowerCase()}.com`}
-                    alt="logo"
-                    onError={(e) => {
-                      e.target.src = "https://via.placeholder.com/50?text=Logo";
-                    }}
-                  />
+          <input
+            type="text"
+            placeholder="Search jobs, companies, locations..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </div>
 
-                  <div>
-                    <h3>{job.title}</h3>
-                    <p>
-                      {job.company} | {job.location}
-                    </p>
+        {loading ? (
+          <div className="jobs-container">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <SkeletonCard key={index} />
+            ))}
+          </div>
+        ) : (
+          <div className="jobs-container">
+            {filteredJobs.length === 0 ? (
+              <div className="jobs-empty">No jobs found for your search.</div>
+            ) : (
+              filteredJobs.map((job) => (
+                <div className="job-card" key={job.id}>
+                  <div className="job-left">
+                    <img
+                      src={`https://logo.clearbit.com/${job.company?.toLowerCase()}.com`}
+                      alt={job.company || "Company"}
+                      onError={(event) => {
+                        event.target.src = "https://via.placeholder.com/56?text=Job";
+                      }}
+                    />
+
+                    <div>
+                      <div className="job-card__top">
+                        <h3>{job.title}</h3>
+                        {job.matchScore != null && (
+                          <span className={`match-badge ${getMatchTone(job.matchScore)}`}>
+                            {job.matchScore.toFixed(1)}% match
+                          </span>
+                        )}
+                      </div>
+
+                      <p>
+                        {job.company} | {job.location || "Location flexible"}
+                      </p>
+                      <p className="job-description">
+                        {job.description?.slice(0, 140)}
+                        {job.description?.length > 140 ? "..." : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="job-right">
+                    <span className="salary">{job.salary || "Salary not disclosed"}</span>
+
+                    <button
+                      type="button"
+                      onClick={() => handleApply(job.id)}
+                      disabled={applyingJobId === job.id}
+                    >
+                      {applyingJobId === job.id ? "Applying..." : "Apply"}
+                    </button>
                   </div>
                 </div>
-
-                <div className="job-right">
-                  <span className="salary">
-                    {job.salary ? job.salary : "Not Disclosed"}
-                  </span>
-
-                  <button onClick={() => handleApply(job.id)}>Apply</button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

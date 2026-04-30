@@ -1,9 +1,0 @@
-$kind: http-request
-name: "{{baseUrl}}/api/v1/jobs"
-url: "{{baseUrl}}/api/v1/jobs"
-method: GET
-auth:
-  type: bearer
-  credentials:
-    token: "{{token}}"
-order: 5000

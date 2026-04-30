@@ -1,22 +1,17 @@
 package com.jobmatch.backend.controller;
 
-import com.jobmatch.backend.dto.AuthResponse;
-import com.jobmatch.backend.dto.ErrorResponse;
-import com.jobmatch.backend.dto.LoginRequest;
-import com.jobmatch.backend.dto.RegisterRequest;
+import com.jobmatch.backend.dto.*;
 import com.jobmatch.backend.exception.AppException;
 import com.jobmatch.backend.service.AuthService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -37,29 +32,22 @@ public class AuthController {
     }
 
     @PostMapping("/resume")
-    public ResponseEntity<?> uploadResume(
-            @RequestBody Map<String, String> request,
-            Authentication authentication
-    ) {
+    public ResponseEntity<?> uploadResume(@RequestBody Map<String, String> request,
+                                          Authentication authentication) {
+
         try {
-            if (authentication == null || !authentication.isAuthenticated()
-                    || "anonymousUser".equals(authentication.getPrincipal())) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ErrorResponse("Please login to upload resume"));
+            if (authentication == null || authentication.getName() == null) {
+                throw new AppException("User not authenticated", HttpStatus.UNAUTHORIZED);
             }
 
             String email = authentication.getName();
-            String resumeText = request != null ? request.get("resumeText") : null;
+            String resumeText = request.get("resumeText");
 
-            AuthResponse response = authService.saveResume(email, resumeText);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(authService.saveResume(email, resumeText));
+
         } catch (AppException e) {
-            HttpStatus status = Objects.requireNonNull(e.getStatus(), "AppException status must not be null");
-            return ResponseEntity.status(status)
+            return ResponseEntity.status(e.getStatus())
                     .body(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An unexpected error occurred"));
         }
     }
 }

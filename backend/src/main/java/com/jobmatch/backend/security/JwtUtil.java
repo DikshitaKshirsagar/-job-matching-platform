@@ -1,14 +1,20 @@
 package com.jobmatch.backend.security;
 
 import com.jobmatch.backend.entity.User;
-import io.jsonwebtoken.*;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import org.springframework.beans.factory.annotation.Value;
-import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
 @Component
@@ -34,24 +40,12 @@ public class JwtUtil {
     public boolean validateToken(String token, UserDetails userDetails) {
         try {
             String email = extractEmail(token);
-            return (email != null &&
-                    email.equals(userDetails.getUsername()) &&
-                    !isTokenExpired(token));
+            return email != null
+                    && email.equals(userDetails.getUsername())
+                    && !isTokenExpired(token);
         } catch (Exception e) {
             return false;
         }
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractAllClaims(token).getExpiration().before(new Date());
-    }
-
-    private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSignKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
     }
 
     public String extractEmail(String token) {
@@ -79,7 +73,25 @@ public class JwtUtil {
         }
     }
 
+    private boolean isTokenExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new Date());
+    }
+
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSignKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
     private Key getSignKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        try {
+            byte[] keyBytes = MessageDigest.getInstance("SHA-256")
+                    .digest(jwtSecret.getBytes(StandardCharsets.UTF_8));
+            return Keys.hmacShaKeyFor(keyBytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Unable to initialize JWT signing key", e);
+        }
     }
 }

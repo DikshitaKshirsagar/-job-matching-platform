@@ -1,6 +1,7 @@
 package com.jobmatch.backend.controller;
 
 import com.jobmatch.backend.dto.ApplicationResponse;
+import com.jobmatch.backend.dto.JobListResponse;
 import com.jobmatch.backend.entity.Job;
 import com.jobmatch.backend.service.ApplicationService;
 import com.jobmatch.backend.service.JobService;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 @RestController
 @RequestMapping("/api/v1/jobs")
+@CrossOrigin(origins = "*")
 public class JobController {
 
     @Autowired
@@ -30,7 +32,7 @@ public class JobController {
     }
     // GET /api/v1/jobs — Any logged-in user
     @GetMapping
-    public ResponseEntity<List<Job>> getAllJobs() {
+    public ResponseEntity<List<JobListResponse>> getAllJobs() {
         return ResponseEntity.ok(jobService.getAllJobs());
     }
 

@@ -8,7 +8,10 @@ public record ApplicationResponse(
         String jobTitle,
         String company,
         String location,
+        Double matchScore,
         String status,
-        LocalDateTime appliedAt
+        LocalDateTime appliedAt,
+        String applicantName,
+        String applicantEmail
 ) {
 }

@@ -7,6 +7,18 @@ import Dashboard from "./pages/Dashboard";
 import Jobs from "./pages/Jobs";
 import Applications from "./pages/Application";
 import Profile from "./pages/Profile";
+import RecruiterDashboard from "./pages/RecruiterDashboard";
+
+const getHomeRoute = () => {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+
+  if (!token) {
+    return "/login";
+  }
+
+  return role === "RECRUITER" ? "/recruiter" : "/dashboard";
+};
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -15,16 +27,14 @@ const PrivateRoute = ({ children }) => {
 
 const PublicRoute = ({ children }) => {
   const token = localStorage.getItem("token");
-  return token ? <Navigate to="/dashboard" /> : children;
+  return token ? <Navigate to={getHomeRoute()} /> : children;
 };
 
 function App() {
-  const token = localStorage.getItem("token");
-
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
+        <Route path="/" element={<Navigate to={getHomeRoute()} replace />} />
 
         <Route
           path="/login"
@@ -49,6 +59,15 @@ function App() {
           element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/recruiter"
+          element={
+            <PrivateRoute>
+              <RecruiterDashboard />
             </PrivateRoute>
           }
         />
@@ -80,7 +99,7 @@ function App() {
           }
         />
 
-        <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
+        <Route path="*" element={<Navigate to={getHomeRoute()} replace />} />
       </Routes>
     </Router>
   );

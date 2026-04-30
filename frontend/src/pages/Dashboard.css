@@ -244,7 +244,7 @@ body {
   box-shadow: 0 10px 25px rgba(129,236,255,0.15);
 }
 
-/* 🔥 BETTER LOGO STYLE */
+/* BETTER LOGO STYLE */
 .job-card img {
   width: 50px;
   height: 50px;
@@ -295,12 +295,12 @@ body {
   margin-bottom: 20px;
 }
 
-/* 🔥 HIDE DEFAULT FILE INPUT */
+/* HIDE DEFAULT FILE INPUT */
 .resume input[type="file"] {
   display: none;
 }
 
-/* 🔥 CUSTOM FILE BUTTON */
+/* CUSTOM FILE BUTTON */
 .custom-upload {
   margin-top: 15px;
   display: block;
@@ -317,7 +317,7 @@ body {
   background: rgba(129,236,255,0.05);
 }
 
-/* 🔥 UPLOAD BUTTON */
+/* UPLOAD BUTTON */
 .resume button {
   margin-top: 15px;
   padding: 12px;

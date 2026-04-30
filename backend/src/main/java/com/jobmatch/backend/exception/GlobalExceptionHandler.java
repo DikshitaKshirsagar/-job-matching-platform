@@ -4,6 +4,7 @@ import com.jobmatch.backend.dto.ErrorResponse;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,6 +35,12 @@ public class GlobalExceptionHandler {
         FieldError fieldError = ex.getBindingResult().getFieldErrors().stream().findFirst().orElse(null);
         String message = fieldError != null ? fieldError.getDefaultMessage() : "Validation failed";
         return ResponseEntity.badRequest().body(new ErrorResponse(message));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleBadJson(HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse("Invalid request body"));
     }
 
     @ExceptionHandler(Exception.class)

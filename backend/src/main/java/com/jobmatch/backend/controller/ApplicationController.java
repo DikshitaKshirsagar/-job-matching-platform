@@ -4,6 +4,7 @@ import com.jobmatch.backend.dto.ApplicationResponse;
 import com.jobmatch.backend.dto.ApplyRequest;
 import com.jobmatch.backend.service.ApplicationService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class ApplicationController {
 
     // ✅ Apply to job
     @PostMapping("/apply")
-    public ResponseEntity<ApplicationResponse> apply(@RequestBody ApplyRequest request) {
+    public ResponseEntity<ApplicationResponse> apply(@Valid @RequestBody ApplyRequest request) {
         return ResponseEntity.ok(applicationService.applyToJob(request));
     }
 

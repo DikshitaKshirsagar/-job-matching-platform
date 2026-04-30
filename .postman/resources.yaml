@@ -5,8 +5,7 @@ workspace:
 # Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
 
 cloudResources:
-  collections:
-    ..\postman\collections\New Collection: 51607292-070fa902-89b1-4e1d-9deb-33d7d3c540e1
+  collections: {}
   environments:
     ..\postman\environments\JobMatch.environment.yaml: 51607292-7939964b-2e40-49fc-b1fa-e751ff81e9ec
 

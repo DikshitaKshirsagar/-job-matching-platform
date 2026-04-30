@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./Dashboard.css";
 import { useNavigate } from "react-router-dom";
-import { uploadResume } from "../services/api";
+import { uploadResumeFile } from "../services/api";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -34,8 +34,7 @@ const Dashboard = () => {
     setUploadMessage("");
 
     try {
-      const resumeText = await resumeFile.text();
-      const response = await uploadResume(resumeText);
+      const response = await uploadResumeFile(resumeFile);
       setUploadMessage(response.data?.message || "Resume uploaded successfully.");
     } catch (error) {
       const message =

@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,92 +23,45 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    @Transactional
     public AuthResponse register(RegisterRequest request) {
-        validateRegisterRequest(request);
+        String name = normalizeRequired(request.getName(), "Name is required");
+        String email = normalizeEmail(request.getEmail());
+        String password = normalizeRequired(request.getPassword(), "Password is required");
 
-        String normalizedEmail = request.getEmail().trim().toLowerCase();
-        if (userRepository.existsByEmail(normalizedEmail)) {
+        if (userRepository.existsByEmail(email)) {
             throw new AppException("Email already exists", HttpStatus.BAD_REQUEST);
         }
 
         User user = new User();
-        user.setName(request.getName().trim());
-        user.setEmail(normalizedEmail);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        Role role;
-        try {
-            role = request.getRole() != null
-                    ? Role.valueOf(request.getRole().trim().toUpperCase())
-                    : Role.SEEKER;
-        } catch (Exception e) {
-            role = Role.SEEKER;
-        }
-
-        user.setRole(role);
+        user.setName(name);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setRole(resolveRole(request.getRole()));
         user.setEmailVerified(true);
-        user.setVerificationToken(null);
-        user.setVerificationTokenExpiry(null);
 
-        User savedUser = userRepository.save(user);
-        String token = jwtUtil.generateToken(savedUser);
+        userRepository.save(user);
+
+        String token = jwtUtil.generateToken(user);
 
         return new AuthResponse(
                 token,
-                savedUser.getName(),
-                savedUser.getEmail(),
-                savedUser.getRole(),
-                savedUser.getId(),
-                "Registration successful! You can now login."
+                user.getName(),
+                user.getEmail(),
+                user.getRole(),
+                user.getId(),
+                "Registration successful"
         );
     }
 
-    private void validateRegisterRequest(RegisterRequest request) {
-        if (request == null) {
-            throw new AppException("Request body is required", HttpStatus.BAD_REQUEST);
-        }
-
-        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
-            throw new AppException("Email is required", HttpStatus.BAD_REQUEST);
-        }
-
-        String emailRegex = "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$";
-        if (!request.getEmail().trim().matches(emailRegex)) {
-            throw new AppException("Invalid email format", HttpStatus.BAD_REQUEST);
-        }
-
-        if (request.getName() == null || request.getName().trim().length() < 2) {
-            throw new AppException("Name must be at least 2 characters", HttpStatus.BAD_REQUEST);
-        }
-
-        String password = request.getPassword();
-        if (password == null || password.length() < 8
-                || !password.matches(".*[A-Z].*")
-                || !password.matches(".*[a-z].*")
-                || !password.matches(".*\\d.*")) {
-            throw new AppException(
-                    "Password must be 8+ chars with uppercase, lowercase, and digit",
-                    HttpStatus.BAD_REQUEST
-            );
-        }
-    }
-
     public AuthResponse login(LoginRequest request) {
-        if (request == null || request.getEmail() == null || request.getEmail().trim().isEmpty()
-                || request.getPassword() == null || request.getPassword().isEmpty()) {
-            throw new AppException("Email and password are required", HttpStatus.BAD_REQUEST);
-        }
+        String email = normalizeEmail(request.getEmail());
+        String password = normalizeRequired(request.getPassword(), "Password is required");
 
-        User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException("Invalid email or password", HttpStatus.UNAUTHORIZED));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new AppException("Invalid email or password", HttpStatus.UNAUTHORIZED);
-        }
-
-        if (!user.isEmailVerified()) {
-            throw new AppException("Please verify your email before logging in.", HttpStatus.UNAUTHORIZED);
         }
 
         String token = jwtUtil.generateToken(user);
@@ -124,16 +76,14 @@ public class AuthService {
         );
     }
 
-    @Transactional
     public AuthResponse saveResume(String email, String resumeText) {
-        User user = userRepository.findByEmail(email)
+        String normalizedEmail = normalizeEmail(email);
+        String cleanedResumeText = normalizeRequired(resumeText, "Resume text is required");
+
+        User user = userRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
 
-        if (resumeText == null || resumeText.trim().isEmpty()) {
-            throw new AppException("Resume file is empty", HttpStatus.BAD_REQUEST);
-        }
-
-        user.setResumeText(resumeText.trim());
+        user.setResumeText(cleanedResumeText);
         userRepository.save(user);
 
         return new AuthResponse(
@@ -144,5 +94,34 @@ public class AuthService {
                 user.getId(),
                 "Resume uploaded successfully"
         );
+    }
+
+    private Role resolveRole(String rawRole) {
+        if (rawRole == null || rawRole.isBlank()) {
+            return Role.SEEKER;
+        }
+
+        try {
+            return Role.valueOf(rawRole.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new AppException("Invalid role", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    private String normalizeEmail(String email) {
+        return normalizeRequired(email, "Email is required").toLowerCase();
+    }
+
+    private String normalizeRequired(String value, String message) {
+        if (value == null) {
+            throw new AppException(message, HttpStatus.BAD_REQUEST);
+        }
+
+        String normalized = value.trim();
+        if (normalized.isEmpty()) {
+            throw new AppException(message, HttpStatus.BAD_REQUEST);
+        }
+
+        return normalized;
     }
 }
