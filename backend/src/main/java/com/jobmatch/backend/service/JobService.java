@@ -1,6 +1,8 @@
 package com.jobmatch.backend.service;
 
 import com.jobmatch.backend.dto.JobListResponse;
+import com.jobmatch.backend.dto.JobRequest;
+import com.jobmatch.backend.dto.JobResponse;
 import com.jobmatch.backend.entity.Job;
 import com.jobmatch.backend.entity.Role;
 import com.jobmatch.backend.entity.User;
@@ -26,35 +28,24 @@ public class JobService {
     private final UserRepository userRepository;
     private final AiMatchingService aiMatchingService;
 
-    public Job createJob(Job job, String role, Long recruiterId) {
+    public JobResponse createJob(JobRequest request, String role, Long recruiterId) {
         if (!"RECRUITER".equals(role) || recruiterId == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only recruiters can post jobs");
         }
 
-        if (job == null) {
+        if (request == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Job payload is required");
         }
 
-        if (job.getTitle() == null || job.getTitle().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Job title is required");
-        }
-
-        if (job.getCompany() == null || job.getCompany().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company is required");
-        }
-
-        if (job.getDescription() == null || job.getDescription().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Job description is required");
-        }
-
-        job.setTitle(job.getTitle().trim());
-        job.setCompany(job.getCompany().trim());
-        job.setDescription(job.getDescription().trim());
-        job.setLocation(job.getLocation() != null ? job.getLocation().trim() : null);
-        job.setSalary(job.getSalary() != null ? job.getSalary().trim() : null);
+        Job job = new Job();
+        job.setTitle(request.title().trim());
+        job.setCompany(request.company().trim());
+        job.setDescription(request.description().trim());
+        job.setLocation(request.location() != null ? request.location().trim() : null);
+        job.setSalary(request.salary() != null ? request.salary().trim() : null);
         job.setRecruiterId(recruiterId);
 
-        return jobRepository.save(job);
+        return toJobResponse(jobRepository.save(job));
     }
 
     public List<JobListResponse> getAllJobs() {
@@ -66,19 +57,23 @@ public class JobService {
                 .toList();
     }
 
-    public Job getJobById(Long id) {
+    public JobResponse getJobById(Long id) {
         Long safeId = Objects.requireNonNull(id, "id must not be null");
         return jobRepository.findById(safeId)
+                .map(this::toJobResponse)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Job not found with id: " + safeId));
     }
 
-    public List<Job> getMyJobs(String role, Long recruiterId) {
+    public List<JobResponse> getMyJobs(String role, Long recruiterId) {
         if (!"RECRUITER".equals(role) || recruiterId == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only recruiters can view their posted jobs");
         }
 
-        return jobRepository.findByRecruiterId(recruiterId);
+        return jobRepository.findByRecruiterId(recruiterId)
+                .stream()
+                .map(this::toJobResponse)
+                .toList();
     }
 
     private User getOptionalCurrentUser() {
@@ -111,6 +106,19 @@ public class JobService {
                 job.getRecruiterId(),
                 job.getCreatedAt(),
                 matchScore
+        );
+    }
+
+    private JobResponse toJobResponse(Job job) {
+        return new JobResponse(
+                job.getId(),
+                job.getTitle(),
+                job.getCompany(),
+                job.getDescription(),
+                job.getLocation(),
+                job.getSalary(),
+                job.getRecruiterId(),
+                job.getCreatedAt()
         );
     }
 }

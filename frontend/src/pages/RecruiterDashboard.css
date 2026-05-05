@@ -62,9 +62,18 @@
   cursor: pointer;
 }
 
+.recruiter-form button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .recruiter-message {
   margin-top: 14px;
   color: #f6df8b;
+}
+
+.recruiter-error {
+  color: #ffb3bc;
 }
 
 .recruiter-grid {

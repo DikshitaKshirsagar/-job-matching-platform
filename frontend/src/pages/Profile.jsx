@@ -10,13 +10,16 @@ const Profile = () => {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const loadProfile = async () => {
     try {
+      setError("");
       const response = await getUserProfile();
       setProfile(response.data);
     } catch (error) {
       console.error("Failed to load profile:", error);
+      setError(error.response?.data?.message || "Unable to load your profile. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -62,6 +65,11 @@ const Profile = () => {
       <div className="profile-page">
         {loading ? (
           <p className="profile-loading">Loading profile...</p>
+        ) : error ? (
+          <section className="profile-card profile-error">
+            <h2>Could not load profile</h2>
+            <p>{error}</p>
+          </section>
         ) : (
           <>
             <section className="profile-card">

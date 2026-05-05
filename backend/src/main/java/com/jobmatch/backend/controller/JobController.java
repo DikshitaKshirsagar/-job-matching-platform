@@ -2,7 +2,8 @@ package com.jobmatch.backend.controller;
 
 import com.jobmatch.backend.dto.ApplicationResponse;
 import com.jobmatch.backend.dto.JobListResponse;
-import com.jobmatch.backend.entity.Job;
+import com.jobmatch.backend.dto.JobRequest;
+import com.jobmatch.backend.dto.JobResponse;
 import com.jobmatch.backend.service.ApplicationService;
 import com.jobmatch.backend.service.JobService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.util.List;
 @RestController
 @RequestMapping("/api/v1/jobs")
@@ -24,11 +26,10 @@ public class JobController {
 
     // POST /api/v1/jobs — Recruiter only
     @PostMapping
-    public ResponseEntity<Job> createJob(@RequestBody Job job, HttpServletRequest request) {
+    public ResponseEntity<JobResponse> createJob(@Valid @RequestBody JobRequest job, HttpServletRequest request) {
         String role = (String) request.getAttribute("role");
         Long recruiterId = (Long) request.getAttribute("userId");
-        Job created = jobService.createJob(job, role, recruiterId);
-        return ResponseEntity.status(201).body(created);
+        return ResponseEntity.status(201).body(jobService.createJob(job, role, recruiterId));
     }
     // GET /api/v1/jobs — Any logged-in user
     @GetMapping
@@ -38,7 +39,7 @@ public class JobController {
 
     // GET /api/v1/jobs/my-jobs — Recruiter only (MUST be above /{id})
     @GetMapping("/my-jobs")
-    public ResponseEntity<List<Job>> getMyJobs(HttpServletRequest request) {
+    public ResponseEntity<List<JobResponse>> getMyJobs(HttpServletRequest request) {
         String role = (String) request.getAttribute("role");
         Long recruiterId = (Long) request.getAttribute("userId");
         return ResponseEntity.ok(jobService.getMyJobs(role, recruiterId));
@@ -46,7 +47,7 @@ public class JobController {
 
     // GET /api/v1/jobs/{id} — Any logged-in user
     @GetMapping("/{id}")
-    public ResponseEntity<Job> getJobById(@PathVariable Long id) {
+    public ResponseEntity<JobResponse> getJobById(@PathVariable Long id) {
         return ResponseEntity.ok(jobService.getJobById(id));
     }
 

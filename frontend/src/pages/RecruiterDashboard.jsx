@@ -17,13 +17,22 @@ const RecruiterDashboard = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [applicants, setApplicants] = useState([]);
   const [message, setMessage] = useState("");
+  const [jobsLoading, setJobsLoading] = useState(true);
+  const [applicantsLoading, setApplicantsLoading] = useState(false);
+  const [jobsError, setJobsError] = useState("");
+  const [applicantsError, setApplicantsError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const loadJobs = async () => {
     try {
+      setJobsError("");
       const response = await getMyJobs();
       setJobs(response.data || []);
     } catch (error) {
       console.error("Failed to load recruiter jobs:", error);
+      setJobsError(error.response?.data?.message || "Unable to load posted jobs.");
+    } finally {
+      setJobsLoading(false);
     }
   };
 
@@ -34,6 +43,7 @@ const RecruiterDashboard = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setMessage("");
+    setSubmitting(true);
 
     try {
       await createJob(form);
@@ -42,11 +52,15 @@ const RecruiterDashboard = () => {
       await loadJobs();
     } catch (error) {
       setMessage(error.response?.data?.message || "Failed to post job.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleSelectJob = async (job) => {
     setSelectedJob(job);
+    setApplicantsLoading(true);
+    setApplicantsError("");
 
     try {
       const response = await getJobApplicants(job.id);
@@ -54,6 +68,9 @@ const RecruiterDashboard = () => {
     } catch (error) {
       console.error("Failed to load applicants:", error);
       setApplicants([]);
+      setApplicantsError(error.response?.data?.message || "Unable to load applicants.");
+    } finally {
+      setApplicantsLoading(false);
     }
   };
 
@@ -92,7 +109,9 @@ const RecruiterDashboard = () => {
               value={form.description}
               onChange={(event) => setForm({ ...form, description: event.target.value })}
             />
-            <button type="submit">Post job</button>
+            <button type="submit" disabled={submitting}>
+              {submitting ? "Posting..." : "Post job"}
+            </button>
           </form>
 
           {message && <p className="recruiter-message">{message}</p>}
@@ -102,7 +121,11 @@ const RecruiterDashboard = () => {
           <div className="recruiter-card">
             <h3>My posted jobs</h3>
             <div className="recruiter-job-list">
-              {jobs.length === 0 ? (
+              {jobsLoading ? (
+                <p>Loading posted jobs...</p>
+              ) : jobsError ? (
+                <p className="recruiter-error">{jobsError}</p>
+              ) : jobs.length === 0 ? (
                 <p>No jobs posted yet.</p>
               ) : (
                 jobs.map((job) => (
@@ -125,6 +148,10 @@ const RecruiterDashboard = () => {
 
             {!selectedJob ? (
               <p>Select a job to see ranked applicants.</p>
+            ) : applicantsLoading ? (
+              <p>Loading applicants...</p>
+            ) : applicantsError ? (
+              <p className="recruiter-error">{applicantsError}</p>
             ) : applicants.length === 0 ? (
               <p>No applicants yet for this job.</p>
             ) : (

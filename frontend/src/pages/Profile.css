@@ -110,6 +110,10 @@
   text-align: center;
 }
 
+.profile-error {
+  color: #ffb3bc;
+}
+
 @media (max-width: 820px) {
   .resume-card {
     grid-template-columns: 1fr;

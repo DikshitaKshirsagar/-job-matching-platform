@@ -9,15 +9,19 @@ const Jobs = () => {
   const [jobs, setJobs] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
   const [applyingJobId, setApplyingJobId] = useState(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
+        setError("");
         const response = await getJobs();
         setJobs(response.data || []);
       } catch (error) {
         console.error("Error fetching jobs:", error);
+        setError(error.response?.data?.message || "Unable to load jobs. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -29,11 +33,13 @@ const Jobs = () => {
   const handleApply = async (jobId) => {
     try {
       setApplyingJobId(jobId);
+      setStatusMessage("");
+      setError("");
       await applyJob({ jobId });
-      alert("Applied successfully.");
+      setStatusMessage("Applied successfully.");
     } catch (error) {
       const message = error.response?.data?.message || "Failed to apply.";
-      alert(message);
+      setError(message);
     } finally {
       setApplyingJobId(null);
     }
@@ -69,8 +75,11 @@ const Jobs = () => {
               <SkeletonCard key={index} />
             ))}
           </div>
+        ) : error ? (
+          <div className="jobs-empty jobs-error">{error}</div>
         ) : (
           <div className="jobs-container">
+            {statusMessage && <div className="jobs-empty jobs-success">{statusMessage}</div>}
             {filteredJobs.length === 0 ? (
               <div className="jobs-empty">No jobs found for your search.</div>
             ) : (

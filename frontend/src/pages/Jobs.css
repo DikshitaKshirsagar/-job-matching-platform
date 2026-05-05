@@ -162,6 +162,14 @@
   background: rgba(10, 18, 31, 0.82);
 }
 
+.jobs-error {
+  color: #ffb3bc;
+}
+
+.jobs-success {
+  color: #a7f3c4;
+}
+
 .skeleton-card {
   pointer-events: none;
 }

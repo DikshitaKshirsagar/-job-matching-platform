@@ -19,14 +19,17 @@ const statusClass = (status) => {
 const Applications = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchApplications = async () => {
       try {
+        setError("");
         const response = await getApplications();
         setApplications(response.data || []);
       } catch (error) {
         console.error("Error fetching applications:", error);
+        setError(error.response?.data?.message || "Unable to load applications. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -52,6 +55,11 @@ const Applications = () => {
 
         {loading ? (
           <p className="applications-loading">Loading applications...</p>
+        ) : error ? (
+          <div className="applications-empty applications-error">
+            <h3>Could not load applications</h3>
+            <p>{error}</p>
+          </div>
         ) : applications.length === 0 ? (
           <div className="applications-empty">
             <h3>No applications yet</h3>

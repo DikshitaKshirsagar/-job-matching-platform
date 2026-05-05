@@ -1,5 +1,6 @@
 package com.jobmatch.backend.service;
 
+import com.jobmatch.backend.dto.JobRequest;
 import com.jobmatch.backend.entity.Job;
 import com.jobmatch.backend.repository.JobRepository;
 import com.jobmatch.backend.repository.UserRepository;
@@ -37,19 +38,24 @@ class JobServiceTest {
 
     @Test
     void testCreateJob() {
-        Job job = new Job();
-        job.setTitle("Backend Engineer");
-        job.setCompany("Acme");
-        job.setDescription("Java Spring Boot role");
-        job.setLocation("Remote");
-        job.setSalary("12 LPA");
+        JobRequest request = new JobRequest(
+                "Backend Engineer",
+                "Acme",
+                "Java Spring Boot role",
+                "Remote",
+                "12 LPA"
+        );
 
-        when(jobRepository.save(any(Job.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(jobRepository.save(any(Job.class))).thenAnswer(invocation -> {
+            Job saved = invocation.getArgument(0);
+            saved.setId(1L);
+            return saved;
+        });
 
-        Job created = jobService.createJob(job, "RECRUITER", 11L);
+        var created = jobService.createJob(request, "RECRUITER", 11L);
 
-        assertEquals(11L, created.getRecruiterId());
-        assertEquals("Backend Engineer", created.getTitle());
+        assertEquals(11L, created.recruiterId());
+        assertEquals("Backend Engineer", created.title());
     }
 
     @Test
@@ -70,14 +76,11 @@ class JobServiceTest {
 
     @Test
     void testCreateJobForbiddenForNonRecruiter() {
-        Job job = new Job();
-        job.setTitle("Backend Engineer");
-        job.setCompany("Acme");
-        job.setDescription("Java Spring Boot role");
+        JobRequest request = new JobRequest("Backend Engineer", "Acme", "Java Spring Boot role", null, null);
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> jobService.createJob(job, "SEEKER", 11L)
+                () -> jobService.createJob(request, "SEEKER", 11L)
         );
 
         assertEquals(FORBIDDEN, exception.getStatusCode());
