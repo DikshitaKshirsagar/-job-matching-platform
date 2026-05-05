@@ -17,10 +17,19 @@ const Dashboard = () => {
   };
 
   const handleFileChange = (e) => {
-    if (e.target.files[0]) {
+    const file = e.target.files[0];
+
+    if (file) {
+      if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+        setResumeFile(null);
+        setFileName("");
+        setUploadMessage("Please choose a PDF resume.");
+        return;
+      }
+
       setUploadMessage("");
-      setResumeFile(e.target.files[0]);
-      setFileName(e.target.files[0].name);
+      setResumeFile(file);
+      setFileName(file.name);
     }
   };
 
@@ -203,7 +212,7 @@ const Dashboard = () => {
 
               <label className="custom-upload">
                 Choose Resume
-                <input type="file" accept=".pdf,.doc,.docx,.txt" onChange={handleFileChange} />
+                <input type="file" accept="application/pdf,.pdf" onChange={handleFileChange} />
               </label>
 
               {fileName && <p className="file-name">{fileName}</p>}
