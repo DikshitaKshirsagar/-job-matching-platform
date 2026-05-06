@@ -2,8 +2,10 @@ package com.jobmatch.backend.controller;
 
 import com.jobmatch.backend.dto.*;
 import com.jobmatch.backend.exception.AppException;
+import com.jobmatch.backend.service.AuthRateLimiter;
 import com.jobmatch.backend.service.AuthService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -20,14 +22,21 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final AuthRateLimiter authRateLimiter;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletRequest servletRequest) {
+        authRateLimiter.validateRequest(servletRequest, "register");
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest servletRequest) {
+        authRateLimiter.validateRequest(servletRequest, "login");
         return ResponseEntity.ok(authService.login(request));
     }
 

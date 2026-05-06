@@ -1,7 +1,7 @@
 package com.jobmatch.backend.exception;
 
 import com.jobmatch.backend.dto.ErrorResponse;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Objects;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(AppException.class)
@@ -45,6 +46,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+        log.error("Unhandled exception", ex);
         return ResponseEntity.internalServerError()
                 .body(new ErrorResponse("Something went wrong"));
     }

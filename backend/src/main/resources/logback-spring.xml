@@ -1,0 +1,16 @@
+<configuration>
+    <property name="LOG_PATTERN" value="{\"timestamp\":\"%date{ISO8601}\",\"level\":\"%level\",\"thread\":\"%thread\",\"logger\":\"%logger{36}\",\"correlationId\":\"%X{correlationId}\",\"message\":\"%msg\"}%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+    <logger name="org.springframework" level="WARN" />
+    <logger name="com.jobmatch" level="DEBUG" />
+</configuration>

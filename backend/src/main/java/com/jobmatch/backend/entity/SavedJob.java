@@ -4,36 +4,29 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "jobs")
+@Table(name = "saved_jobs", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "job_id"})
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Job {
+public class SavedJob {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String title;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(nullable = false)
-    private String company;
-
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String description;
-
-    @Column(columnDefinition = "TEXT")
-    private String skills;
-
-    private String location;
-    private String salary;
-
-    @Column(nullable = false)
-    private Long recruiterId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_id", nullable = false)
+    private Job job;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

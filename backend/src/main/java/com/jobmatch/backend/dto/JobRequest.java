@@ -14,6 +14,8 @@ public record JobRequest(
 
         String location,
 
-        String salary
+        String salary,
+
+        String skills
 ) {
 }

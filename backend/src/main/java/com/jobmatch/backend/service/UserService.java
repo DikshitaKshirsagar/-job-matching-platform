@@ -1,6 +1,7 @@
 package com.jobmatch.backend.service;
 
 import com.jobmatch.backend.dto.*;
+import com.jobmatch.backend.dto.UserProfileUpdateRequest;
 import com.jobmatch.backend.entity.User;
 import com.jobmatch.backend.exception.AppException;
 import com.jobmatch.backend.repository.*;
@@ -53,6 +54,28 @@ public class UserService {
 
     public UserProfileResponse getUserProfile() {
         User user = getCurrentUser();
+
+        return new UserProfileResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole(),
+                user.getResumeFileName(),
+                user.getResumeText() != null && !user.getResumeText().isBlank(),
+                user.getCreatedAt()
+        );
+    }
+
+    public UserProfileResponse updateUserProfile(UserProfileUpdateRequest request) {
+        User user = getCurrentUser();
+
+        String name = request.getName();
+        if (name == null || name.isBlank()) {
+            throw new AppException("Name is required", HttpStatus.BAD_REQUEST);
+        }
+
+        user.setName(name.trim());
+        userRepository.save(user);
 
         return new UserProfileResponse(
                 user.getId(),

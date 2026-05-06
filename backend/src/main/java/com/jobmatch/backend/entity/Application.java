@@ -1,5 +1,6 @@
 package com.jobmatch.backend.entity;
 
+import com.jobmatch.backend.entity.ApplicationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,7 +31,8 @@ public class Application {
     private Double matchScore;
 
     // ✅ Application status
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ApplicationStatus status;
 
     // ✅ Timestamp
     private LocalDateTime appliedAt;

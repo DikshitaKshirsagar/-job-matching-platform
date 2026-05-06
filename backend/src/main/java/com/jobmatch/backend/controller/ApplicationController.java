@@ -1,16 +1,15 @@
 package com.jobmatch.backend.controller;
 
 import com.jobmatch.backend.dto.ApplicationResponse;
+import com.jobmatch.backend.dto.ApplicationStatusUpdateRequest;
 import com.jobmatch.backend.dto.ApplyRequest;
 import com.jobmatch.backend.service.ApplicationService;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/applications")
@@ -28,15 +27,24 @@ public class ApplicationController {
 
     // ✅ Get my applications (SEEKER)
     @GetMapping("/my")
-    public ResponseEntity<List<ApplicationResponse>> myApplications() {
-        return ResponseEntity.ok(applicationService.getMyApplications());
+    public ResponseEntity<Page<ApplicationResponse>> myApplications(Pageable pageable) {
+        return ResponseEntity.ok(applicationService.getMyApplications(pageable));
     }
 
     // ✅ Get applications for a job (RECRUITER)
     @GetMapping("/job/{jobId}")
-    public ResponseEntity<List<ApplicationResponse>> applicationsByJob(
-            @PathVariable Long jobId) {
+    public ResponseEntity<Page<ApplicationResponse>> applicationsByJob(
+            @PathVariable Long jobId,
+            Pageable pageable) {
 
-        return ResponseEntity.ok(applicationService.getApplicationsByJob(jobId));
+        return ResponseEntity.ok(applicationService.getApplicationsByJob(jobId, pageable));
+    }
+
+    // ✅ Update application status (RECRUITER)
+    @PatchMapping("/{applicationId}/status")
+    public ResponseEntity<ApplicationResponse> updateStatus(
+            @PathVariable Long applicationId,
+            @Valid @RequestBody ApplicationStatusUpdateRequest request) {
+        return ResponseEntity.ok(applicationService.updateApplicationStatus(applicationId, request));
     }
 }

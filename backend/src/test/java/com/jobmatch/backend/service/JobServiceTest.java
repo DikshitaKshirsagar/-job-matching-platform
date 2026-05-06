@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -43,7 +45,8 @@ class JobServiceTest {
                 "Acme",
                 "Java Spring Boot role",
                 "Remote",
-                "12 LPA"
+                "12 LPA",
+                "Java, Spring"
         );
 
         when(jobRepository.save(any(Job.class))).thenAnswer(invocation -> {
@@ -66,17 +69,18 @@ class JobServiceTest {
         job.setCompany("Acme");
         job.setDescription("React job");
 
-        when(jobRepository.findAll()).thenReturn(List.of(job));
+        when(jobRepository.findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(job)));
 
-        var jobs = jobService.getAllJobs();
+        var jobs = jobService.getJobs(null, null, null, null, Pageable.unpaged());
 
-        assertEquals(1, jobs.size());
-        assertEquals("Frontend Engineer", jobs.get(0).title());
+        assertEquals(1, jobs.getContent().size());
+        assertEquals("Frontend Engineer", jobs.getContent().get(0).title());
     }
 
     @Test
     void testCreateJobForbiddenForNonRecruiter() {
-        JobRequest request = new JobRequest("Backend Engineer", "Acme", "Java Spring Boot role", null, null);
+        JobRequest request = new JobRequest("Backend Engineer", "Acme", "Java Spring Boot role", null, null, null);
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,

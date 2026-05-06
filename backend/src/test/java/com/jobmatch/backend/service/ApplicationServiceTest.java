@@ -3,6 +3,7 @@ package com.jobmatch.backend.service;
 import com.jobmatch.backend.dto.ApplyRequest;
 import com.jobmatch.backend.entity.Application;
 import com.jobmatch.backend.entity.Job;
+import com.jobmatch.backend.entity.ApplicationStatus;
 import com.jobmatch.backend.entity.Role;
 import com.jobmatch.backend.entity.User;
 import com.jobmatch.backend.exception.AppException;
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -112,14 +115,14 @@ class ApplicationServiceTest {
         top.setJob(job);
         top.setUser(buildSeeker());
         top.setMatchScore(92.0);
-        top.setStatus("APPLIED");
+        top.setStatus(ApplicationStatus.APPLIED);
 
         Application lower = new Application();
         lower.setId(2L);
         lower.setJob(job);
         lower.setUser(buildAnotherSeeker());
         lower.setMatchScore(70.0);
-        lower.setStatus("APPLIED");
+        lower.setStatus(ApplicationStatus.APPLIED);
 
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(recruiter.getEmail(), null, recruiter.getAuthorities())
@@ -127,13 +130,13 @@ class ApplicationServiceTest {
 
         when(userRepository.findByEmail(recruiter.getEmail())).thenReturn(Optional.of(recruiter));
         when(jobRepository.findById(5L)).thenReturn(Optional.of(job));
-        when(applicationRepository.findByJobOrderByMatchScoreDesc(job)).thenReturn(List.of(top, lower));
+        when(applicationRepository.findByJobOrderByMatchScoreDesc(job, Pageable.unpaged())).thenReturn(new PageImpl<>(List.of(top, lower)));
 
-        var responses = applicationService.getApplicationsByJob(5L);
+        var responses = applicationService.getApplicationsByJob(5L, Pageable.unpaged());
 
-        assertEquals(2, responses.size());
-        assertEquals(92.0, responses.get(0).matchScore());
-        assertEquals("Seeker User", responses.get(0).applicantName());
+        assertEquals(2, responses.getContent().size());
+        assertEquals(92.0, responses.getContent().get(0).matchScore());
+        assertEquals("Seeker User", responses.getContent().get(0).applicantName());
     }
 
     private User buildSeeker() {

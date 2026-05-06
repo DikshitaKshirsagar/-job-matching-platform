@@ -7,6 +7,7 @@ public record JobResponse(
         String title,
         String company,
         String description,
+        String skills,
         String location,
         String salary,
         Long recruiterId,

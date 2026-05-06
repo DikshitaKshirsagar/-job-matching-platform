@@ -1,8 +1,10 @@
 package com.jobmatch.backend.service;
 
 import com.jobmatch.backend.dto.ApplicationResponse;
+import com.jobmatch.backend.dto.ApplicationStatusUpdateRequest;
 import com.jobmatch.backend.dto.ApplyRequest;
 import com.jobmatch.backend.entity.Application;
+import com.jobmatch.backend.entity.ApplicationStatus;
 import com.jobmatch.backend.entity.Job;
 import com.jobmatch.backend.entity.Role;
 import com.jobmatch.backend.entity.User;
@@ -10,9 +12,9 @@ import com.jobmatch.backend.exception.AppException;
 import com.jobmatch.backend.repository.ApplicationRepository;
 import com.jobmatch.backend.repository.JobRepository;
 import com.jobmatch.backend.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -51,23 +53,21 @@ public class ApplicationService {
         application.setUser(user);
         application.setJob(job);
         application.setMatchScore(matchScore);
-        application.setStatus("APPLIED");
+        application.setStatus(ApplicationStatus.APPLIED);
 
         return toResponse(applicationRepository.save(application));
     }
 
     @Transactional(readOnly = true)
-    public List<ApplicationResponse> getMyApplications() {
+    public Page<ApplicationResponse> getMyApplications(Pageable pageable) {
         User user = getCurrentUser();
 
-        return applicationRepository.findByUser(user)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        return applicationRepository.findByUser(user, pageable)
+                .map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public List<ApplicationResponse> getApplicationsByJob(Long jobId) {
+    public Page<ApplicationResponse> getApplicationsByJob(Long jobId, Pageable pageable) {
         User currentUser = getCurrentUser();
 
         Job job = jobRepository.findById(jobId)
@@ -81,10 +81,34 @@ public class ApplicationService {
             throw new AppException("Access denied", HttpStatus.FORBIDDEN);
         }
 
-        return applicationRepository.findByJobOrderByMatchScoreDesc(job)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        return applicationRepository.findByJobOrderByMatchScoreDesc(job, pageable)
+                .map(this::toResponse);
+    }
+
+    @Transactional
+    public ApplicationResponse updateApplicationStatus(Long applicationId, ApplicationStatusUpdateRequest request) {
+        User currentUser = getCurrentUser();
+
+        if (currentUser.getRole() != Role.RECRUITER) {
+            throw new AppException("Only recruiters can update application status", HttpStatus.FORBIDDEN);
+        }
+
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new AppException("Application not found", HttpStatus.NOT_FOUND));
+
+        if (!application.getJob().getRecruiterId().equals(currentUser.getId())) {
+            throw new AppException("Access denied", HttpStatus.FORBIDDEN);
+        }
+
+        ApplicationStatus status;
+        try {
+            status = ApplicationStatus.valueOf(request.status().trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new AppException("Invalid application status", HttpStatus.BAD_REQUEST);
+        }
+
+        application.setStatus(status);
+        return toResponse(applicationRepository.save(application));
     }
 
     private User getCurrentUser() {
@@ -107,7 +131,7 @@ public class ApplicationService {
                 application.getJob().getCompany(),
                 application.getJob().getLocation(),
                 application.getMatchScore(),
-                application.getStatus(),
+                application.getStatus() != null ? application.getStatus().name() : null,
                 application.getAppliedAt(),
                 application.getUser().getName(),
                 application.getUser().getEmail()
