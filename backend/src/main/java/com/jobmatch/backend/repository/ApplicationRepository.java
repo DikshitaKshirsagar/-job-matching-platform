@@ -13,6 +13,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findByUser(User user);
     Page<Application> findByUser(User user, Pageable pageable);
+    List<Application> findByUserOrderByAppliedAtDesc(User user);
 
     long countByUser(User user);   // ✅ FIX ADDED
 

@@ -17,8 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/jobs")
-@CrossOrigin(origins = "*")
+@RequestMapping({"/api/jobs", "/api/v1/jobs"})
 public class JobController {
 
     @Autowired

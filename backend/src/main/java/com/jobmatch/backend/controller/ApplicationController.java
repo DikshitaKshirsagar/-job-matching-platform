@@ -11,10 +11,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/v1/applications")
+@RequestMapping({"/api/applications", "/api/v1/applications"})
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class ApplicationController {
 
     private final ApplicationService applicationService;
@@ -25,10 +26,15 @@ public class ApplicationController {
         return ResponseEntity.ok(applicationService.applyToJob(request));
     }
 
+    @GetMapping
+    public ResponseEntity<List<ApplicationResponse>> applications() {
+        return ResponseEntity.ok(applicationService.getMyApplicationsList());
+    }
+
     // ✅ Get my applications (SEEKER)
     @GetMapping("/my")
-    public ResponseEntity<Page<ApplicationResponse>> myApplications(Pageable pageable) {
-        return ResponseEntity.ok(applicationService.getMyApplications(pageable));
+    public ResponseEntity<List<ApplicationResponse>> myApplications() {
+        return ResponseEntity.ok(applicationService.getMyApplicationsList());
     }
 
     // ✅ Get applications for a job (RECRUITER)

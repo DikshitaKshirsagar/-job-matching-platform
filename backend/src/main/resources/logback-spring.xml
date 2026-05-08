@@ -1,5 +1,5 @@
 <configuration>
-    <property name="LOG_PATTERN" value="{\"timestamp\":\"%date{ISO8601}\",\"level\":\"%level\",\"thread\":\"%thread\",\"logger\":\"%logger{36}\",\"correlationId\":\"%X{correlationId}\",\"message\":\"%msg\"}%n"/>
+    <property name="LOG_PATTERN" value="{&quot;timestamp&quot;:&quot;%date{ISO8601}&quot;,&quot;level&quot;:&quot;%level&quot;,&quot;thread&quot;:&quot;%thread&quot;,&quot;logger&quot;:&quot;%logger{36}&quot;,&quot;correlationId&quot;:&quot;%X{correlationId}&quot;,&quot;message&quot;:&quot;%msg&quot;}%n"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

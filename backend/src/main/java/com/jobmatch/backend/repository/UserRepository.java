@@ -1,5 +1,6 @@
 package com.jobmatch.backend.repository;
 
+import com.jobmatch.backend.entity.Role;
 import com.jobmatch.backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -19,4 +20,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByVerificationToken(String token);
 
     Optional<User> findByPasswordResetToken(String token);
+
+    Optional<User> findFirstByOrderByIdAsc();
+
+    Optional<User> findFirstByRoleOrderByIdAsc(Role role);
 }
