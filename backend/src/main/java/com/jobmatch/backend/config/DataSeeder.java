@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@Profile("prod")  // Only run in production, not in H2 testing
+@Profile("!test")  // Seed sample data in non-test environments
 public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;

@@ -33,6 +33,20 @@ services:
       timeout: 10s
       retries: 5
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: jobmatch-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_PASSWORD:}
+    ports:
+      - '8080:80'
+    depends_on:
+      mysql:
+        condition: service_healthy
+
   backend:
     build:
       context: ./backend

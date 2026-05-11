@@ -18,7 +18,9 @@ const Jobs = () => {
       try {
         setError("");
         const response = await getJobs();
-        setJobs(response.data || []);
+        // Handle Spring Boot Page response - extract content array
+        const jobsData = response.data.content || response.data || [];
+        setJobs(jobsData);
       } catch (error) {
         console.error("Error fetching jobs:", error);
         setError(error.response?.data?.message || "Unable to load jobs. Please try again.");
