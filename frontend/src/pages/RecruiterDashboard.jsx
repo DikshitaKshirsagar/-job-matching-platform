@@ -27,9 +27,7 @@ const RecruiterDashboard = () => {
     try {
       setJobsError("");
       const response = await getMyJobs();
-      // Handle Spring Boot Page response - extract content array
-      const jobsData = response.data.content || response.data || [];
-      setJobs(jobsData);
+      setJobs(response.data || []);
     } catch (error) {
       console.error("Failed to load recruiter jobs:", error);
       setJobsError(error.response?.data?.message || "Unable to load posted jobs.");
@@ -66,9 +64,7 @@ const RecruiterDashboard = () => {
 
     try {
       const response = await getJobApplicants(job.id);
-      // Handle Spring Boot Page response - extract content array
-      const applicantsData = response.data.content || response.data || [];
-      setApplicants(applicantsData);
+      setApplicants(response.data || []);
     } catch (error) {
       console.error("Failed to load applicants:", error);
       setApplicants([]);

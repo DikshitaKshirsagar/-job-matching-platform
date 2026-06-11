@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS jobs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    description LONGTEXT NOT NULL,
+    company VARCHAR(150) NOT NULL,
+    location VARCHAR(150) NOT NULL,
+    job_type ENUM('FULL_TIME','PART_TIME','CONTRACT','INTERNSHIP','REMOTE','HYBRID') DEFAULT 'FULL_TIME',
+    status ENUM('ACTIVE','CLOSED','DRAFT','EXPIRED') NOT NULL DEFAULT 'ACTIVE',
+    salary_min DECIMAL(12,2),
+    salary_max DECIMAL(12,2),
+    required_skills LONGTEXT,
+    recruiter_id BIGINT NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_job_recruiter FOREIGN KEY (recruiter_id) REFERENCES users(id),
+    INDEX idx_job_status (status),
+    INDEX idx_job_recruiter (recruiter_id),
+    INDEX idx_job_location (location),
+    INDEX idx_job_created_at (created_at),
+    INDEX idx_job_deleted (is_deleted)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

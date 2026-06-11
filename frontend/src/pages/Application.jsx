@@ -26,7 +26,22 @@ const Applications = () => {
       try {
         setError("");
         const response = await getApplications();
-        setApplications(response.data || []);
+
+        // ✅ Auto-detects all response shapes
+        const data = response.data;
+        if (Array.isArray(data)) {
+          setApplications(data);                        // API returns [...] directly
+        } else if (Array.isArray(data?.applications)) {
+          setApplications(data.applications);           // API returns { applications: [...] }
+        } else if (Array.isArray(data?.data)) {
+          setApplications(data.data);                   // API returns { data: [...] }
+        } else if (Array.isArray(data?.content)) {
+          setApplications(data.content);                // Spring Boot pagination { content: [...] }
+        } else {
+          setApplications([]);                          // fallback
+          console.warn("Unexpected API shape:", data);
+        }
+
       } catch (error) {
         console.error("Error fetching applications:", error);
         setError(error.response?.data?.message || "Unable to load applications. Please try again.");

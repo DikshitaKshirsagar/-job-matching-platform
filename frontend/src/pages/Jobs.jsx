@@ -18,9 +18,22 @@ const Jobs = () => {
       try {
         setError("");
         const response = await getJobs();
-        // Handle Spring Boot Page response - extract content array
-        const jobsData = response.data.content || response.data || [];
-        setJobs(jobsData);
+
+        // ✅ Auto-detects all response shapes
+        const data = response.data;
+        if (Array.isArray(data)) {
+          setJobs(data);                        // API returns [...] directly
+        } else if (Array.isArray(data?.jobs)) {
+          setJobs(data.jobs);                   // API returns { jobs: [...] }
+        } else if (Array.isArray(data?.data)) {
+          setJobs(data.data);                   // API returns { data: [...] }
+        } else if (Array.isArray(data?.content)) {
+          setJobs(data.content);                // Spring Boot pagination { content: [...] }
+        } else {
+          setJobs([]);                          // fallback
+          console.warn("Unexpected API shape:", data);
+        }
+
       } catch (error) {
         console.error("Error fetching jobs:", error);
         setError(error.response?.data?.message || "Unable to load jobs. Please try again.");
