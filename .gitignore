@@ -5,3 +5,8 @@ backend/data/jobmatchdb.lock.db
 .idea/
 TODO.md
 backend/src/test/resources/
+backend/.env
+**/.env
+.env*.local
+*.log
+backend/logs/
