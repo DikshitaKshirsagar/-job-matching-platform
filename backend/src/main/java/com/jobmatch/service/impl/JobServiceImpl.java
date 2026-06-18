@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,11 +35,11 @@ public class JobServiceImpl implements JobService {
     @Override
     @Transactional
     public JobResponse createJob(CreateJobRequest request, Long recruiterId) {
-        log.info("Creating job '{}' for recruiter id: {}", request.getTitle(), recruiterId);
-
         if (request == null) {
             throw new BadRequestException("Job request cannot be null");
         }
+
+        log.info("Creating job '{}' for recruiter id: {}", request.getTitle(), recruiterId);
 
         User recruiter = userRepository.findById(recruiterId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", recruiterId));
@@ -48,7 +49,7 @@ public class JobServiceImpl implements JobService {
         job.setDescription(request.getDescription().trim());
         job.setCompany(request.getCompany().trim());
         job.setLocation(request.getLocation().trim());
-        job.setRequiredSkills(request.getRequiredSkills());
+        job.setRequiredSkills(request.getRequiredSkills() != null ? request.getRequiredSkills() : new ArrayList<>());
         job.setRecruiter(recruiter);
         job.setStatus(JobStatus.ACTIVE);
 

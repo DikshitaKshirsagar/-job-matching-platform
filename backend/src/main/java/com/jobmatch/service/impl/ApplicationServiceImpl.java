@@ -13,6 +13,7 @@ import com.jobmatch.domain.repository.UserRepository;
 import com.jobmatch.exception.BadRequestException;
 import com.jobmatch.exception.ResourceNotFoundException;
 import com.jobmatch.exception.UnauthorizedException;
+import com.jobmatch.infrastructure.external.AiServiceClient;
 import com.jobmatch.service.ApplicationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
+    private final AiServiceClient aiServiceClient;
 
     @Override
     @Transactional
@@ -53,15 +55,22 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new BadRequestException("You have already applied to this job");
         }
 
+        // Compute match score via AI service (gracefully falls back to 0.0 if unavailable)
+        double matchScore = aiServiceClient.calculateMatchScore(
+                applicant.getResumeText(),
+                job.getDescription()
+        );
+        log.info("Computed match score for job id {}: {}", job.getId(), matchScore);
+
         Application application = new Application();
         application.setApplicant(applicant);
         application.setJob(job);
         application.setCoverLetter(request.getCoverLetter());
         application.setStatus(ApplicationStatus.PENDING);
-        application.setMatchScore(0.0);
+        application.setMatchScore(matchScore);
 
         Application saved = applicationRepository.save(application);
-        log.info("Successfully created application with id: {}", saved.getId());
+        log.info("Successfully created application with id: {}, matchScore: {}", saved.getId(), matchScore);
         return toResponse(saved);
     }
 
@@ -85,11 +94,23 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ApplicationResponse> getApplicationsByJob(Long jobId, Pageable pageable) {
+    public Page<ApplicationResponse> getApplicationsByJob(Long jobId, Long recruiterId, Pageable pageable) {
         log.debug("Fetching applications for job id: {}", jobId);
         
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job", jobId));
+
+        User recruiter = userRepository.findById(recruiterId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", recruiterId));
+
+        if (!recruiter.getRole().equals(com.jobmatch.domain.enums.UserRole.ROLE_RECRUITER)) {
+            throw new com.jobmatch.exception.UnauthorizedException("Only recruiters can view job applicants");
+        }
+
+        if (!job.getRecruiter().getId().equals(recruiterId)) {
+            log.warn("Unauthorized access attempt for job id: {} by user id: {}", jobId, recruiterId);
+            throw new com.jobmatch.exception.UnauthorizedException("You can only view applications for your own jobs");
+        }
 
         return applicationRepository.findByJobOrderByMatchScoreDesc(jobId, pageable)
                 .map(this::toResponse);

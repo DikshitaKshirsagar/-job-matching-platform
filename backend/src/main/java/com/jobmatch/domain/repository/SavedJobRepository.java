@@ -19,4 +19,6 @@ public interface SavedJobRepository extends JpaRepository<SavedJob, Long> {
     boolean existsByUserAndJob(User user, Job job);
 
     void deleteByUserAndJob(User user, Job job);
+
+    long countByUserId(Long userId);
 }

@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: job-match-backend
+  namespace: job-match
+  labels:
+    app: job-match
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: job-match
+    tier: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: job-match-frontend
+  namespace: job-match
+  labels:
+    app: job-match
+    tier: frontend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: job-match
+    tier: frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: job-match-ai-service
+  namespace: job-match
+  labels:
+    app: job-match
+    tier: ai-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+    name: http
+  selector:
+    app: job-match
+    tier: ai-service

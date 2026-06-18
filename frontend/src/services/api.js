@@ -63,5 +63,6 @@ export const getJobApplicants = (jobId) => API.get(`/jobs/${jobId}/applicants`);
 
 export const applyJob = (data) => API.post("/applications/apply", data);
 export const getApplications = () => API.get("/applications/my");
+export const getJobRecommendations = () => API.get("/users/recommendations");
 
 export default API;

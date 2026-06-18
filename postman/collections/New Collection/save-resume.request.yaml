@@ -1,0 +1,14 @@
+$kind: http-request
+name: Save Resume
+method: POST
+url: 'http://localhost:8081/api/v1/auth/resume'
+order: 1002
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "resumeText": "Experienced Java developer with Spring Boot, Hibernate, and microservices expertise."
+    }

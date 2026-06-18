@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,7 +20,7 @@ public class JobResponse {
     private String title;
     private String company;
     private String description;
-    private String requiredSkills;
+    private List<String> requiredSkills;
     private String location;
     private BigDecimal salaryMin;
     private BigDecimal salaryMax;

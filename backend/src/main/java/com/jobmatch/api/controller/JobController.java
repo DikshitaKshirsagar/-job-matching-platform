@@ -5,6 +5,7 @@ import com.jobmatch.api.dto.request.UpdateJobRequest;
 import com.jobmatch.api.dto.response.ApiResponse;
 import com.jobmatch.api.dto.response.JobResponse;
 import com.jobmatch.service.JobService;
+import com.jobmatch.util.UserIdResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -16,8 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,12 +30,14 @@ import java.util.List;
 public class JobController {
 
     private final JobService jobService;
+    private final UserIdResolver userIdResolver;
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_RECRUITER')")
     @Operation(summary = "Create a new job", description = "Recruiter creates a new job posting")
     public ResponseEntity<ApiResponse<JobResponse>> createJob(@Valid @RequestBody CreateJobRequest request) {
         log.info("Create job request: {}", request.getTitle());
-        Long recruiterId = getCurrentUserId();
+        Long recruiterId = userIdResolver.getCurrentUserId();
         JobResponse response = jobService.createJob(request, recruiterId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Job created successfully", response));
@@ -68,38 +70,35 @@ public class JobController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_RECRUITER')")
     @Operation(summary = "Update job", description = "Recruiter updates their own job posting")
     public ResponseEntity<ApiResponse<JobResponse>> updateJob(
             @PathVariable Long id,
             @Valid @RequestBody UpdateJobRequest request) {
         log.info("Update job id: {}", id);
-        Long recruiterId = getCurrentUserId();
+        Long recruiterId = userIdResolver.getCurrentUserId();
         JobResponse response = jobService.updateJob(id, request, recruiterId);
         return ResponseEntity.ok(ApiResponse.success("Job updated successfully", response));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_RECRUITER')")
     @Operation(summary = "Delete job", description = "Recruiter deletes their own job posting")
     public ResponseEntity<ApiResponse<Void>> deleteJob(@PathVariable Long id) {
         log.info("Delete job id: {}", id);
-        Long recruiterId = getCurrentUserId();
+        Long recruiterId = userIdResolver.getCurrentUserId();
         jobService.deleteJob(id, recruiterId);
         return ResponseEntity.ok(ApiResponse.successMessage("Job deleted successfully"));
     }
 
     @GetMapping("/recruiter/my-jobs")
+    @PreAuthorize("hasRole('ROLE_RECRUITER')")
     @Operation(summary = "Get recruiter's jobs", description = "List all job postings by the current recruiter")
     public ResponseEntity<ApiResponse<List<JobResponse>>> getMyJobs() {
         log.debug("Get recruiter's jobs");
-        Long recruiterId = getCurrentUserId();
+        Long recruiterId = userIdResolver.getCurrentUserId();
         List<JobResponse> jobs = jobService.getJobsByRecruiter(recruiterId);
         return ResponseEntity.ok(ApiResponse.success(jobs));
     }
 
-    private Long getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        // In a real application, extract from principal or claims
-        // For now, this is a placeholder - should be extracted from JWT token
-        return 1L;
-    }
 }

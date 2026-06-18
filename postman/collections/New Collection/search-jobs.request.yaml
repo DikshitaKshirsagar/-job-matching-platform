@@ -1,0 +1,10 @@
+$kind: http-request
+name: Search Jobs
+method: GET
+url: 'http://localhost:8081/api/v1/jobs?keyword=Java&location=New%20York&page=0&size=10'
+order: 2003
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: none

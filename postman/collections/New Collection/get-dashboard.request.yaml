@@ -1,0 +1,10 @@
+$kind: http-request
+name: Get Dashboard
+method: GET
+url: 'http://localhost:8081/api/v1/users/dashboard'
+order: 5002
+headers:
+  - key: Authorization
+    value: Bearer {{token}}
+body:
+  type: none

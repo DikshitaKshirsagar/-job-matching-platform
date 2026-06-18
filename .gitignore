@@ -1,12 +1,35 @@
+# Backend
 backend/backend-run.log
 backend/backend-run.err.log
 backend/data/jobmatchdb.lock.db
+backend/logs/
+backend/.env
+
+# IDE
 .vscode/
 .idea/
-TODO.md
-backend/src/test/resources/
-backend/.env
+
+# Environment files
 **/.env
 .env*.local
+
+# Log files
 *.log
-backend/logs/
+logs/
+
+# Frontend build
+frontend/build/
+frontend/dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~

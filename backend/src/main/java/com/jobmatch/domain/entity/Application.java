@@ -16,7 +16,10 @@ import java.time.LocalDateTime;
 @Table(name = "applications", indexes = {
     @Index(name = "idx_app_applicant_id", columnList = "applicant_id"),
     @Index(name = "idx_app_job_id", columnList = "job_id"),
-    @Index(name = "idx_app_status", columnList = "status")
+    @Index(name = "idx_app_status", columnList = "status"),
+    @Index(name = "idx_app_applicant_status", columnList = "applicant_id,status"),
+    @Index(name = "idx_app_job_status", columnList = "job_id,status"),
+    @Index(name = "idx_app_applicant_deleted", columnList = "applicant_id,is_deleted")
 }, uniqueConstraints = {
     @UniqueConstraint(columnNames = {"applicant_id", "job_id"})
 })

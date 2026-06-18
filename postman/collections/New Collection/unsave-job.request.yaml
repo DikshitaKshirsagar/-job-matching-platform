@@ -1,0 +1,10 @@
+$kind: http-request
+name: Unsave Job
+method: DELETE
+url: 'http://localhost:8081/api/v1/saved-jobs/1'
+order: 4001
+headers:
+  - key: Authorization
+    value: Bearer {{token}}
+body:
+  type: none

@@ -1,0 +1,10 @@
+$kind: http-request
+name: Delete Job
+method: DELETE
+url: 'http://localhost:8081/api/v1/jobs/1'
+order: 2005
+headers:
+  - key: Authorization
+    value: Bearer {{token}}
+body:
+  type: none

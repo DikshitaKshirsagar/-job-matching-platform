@@ -1,0 +1,731 @@
+{
+  "info": {
+    "name": "AI Job Platform",
+    "description": "Complete API collection for the Job Matching Platform. All authenticated endpoints use the JWT token obtained from Login/Register. Includes automated test scripts for CI/CD pipeline.\n\nRun with: newman run collection.json -e environment.json",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "jobId",
+      "value": ""
+    },
+    {
+      "key": "applicationId",
+      "value": ""
+    },
+    {
+      "key": "recruiterToken",
+      "value": ""
+    },
+    {
+      "key": "seekerToken",
+      "value": ""
+    },
+    {
+      "key": "seekerJobId",
+      "value": ""
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Seeker",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Register returns 201 and token', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "  pm.expect(jsonData.data).to.have.property('token');",
+                  "  pm.collectionVariables.set('seekerToken', jsonData.data.token);",
+                  "  pm.globals.set('seekerToken', jsonData.data.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/register",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Test Seeker\",\n  \"email\": \"seeker_ci@example.com\",\n  \"password\": \"password123\",\n  \"confirmPassword\": \"password123\",\n  \"role\": \"SEEKER\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register Recruiter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Register recruiter returns 201 and token', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "  pm.expect(jsonData.data).to.have.property('token');",
+                  "  pm.collectionVariables.set('recruiterToken', jsonData.data.token);",
+                  "  pm.collectionVariables.set('token', jsonData.data.token);",
+                  "  pm.globals.set('recruiterToken', jsonData.data.token);",
+                  "  pm.globals.set('token', jsonData.data.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/register",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Test Recruiter\",\n  \"email\": \"recruiter_ci@example.com\",\n  \"password\": \"password123\",\n  \"confirmPassword\": \"password123\",\n  \"role\": \"RECRUITER\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login returns 200 and JWT token', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "  pm.expect(jsonData.data).to.have.property('token');",
+                  "  pm.collectionVariables.set('token', jsonData.data.token);",
+                  "  pm.globals.set('token', jsonData.data.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"recruiter_ci@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "Create Job (Recruiter)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Create job returns 201 for recruiter', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "  pm.expect(jsonData.data).to.have.property('id');",
+                  "  pm.collectionVariables.set('jobId', jsonData.data.id);",
+                  "  pm.globals.set('jobId', String(jsonData.data.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{recruiterToken}}", "type": "string"}
+              ]
+            },
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/jobs",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Software Engineer CI\",\n  \"description\": \"Java developer with Spring Boot experience\",\n  \"company\": \"Tech Corp CI\",\n  \"location\": \"Remote\",\n  \"requiredSkills\": \"Java, Spring Boot, SQL\",\n  \"jobType\": \"FULL_TIME\",\n  \"salaryMin\": 80000,\n  \"salaryMax\": 120000\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Jobs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Get all jobs returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "  pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/jobs?page=0&size=10&sortBy=createdAt&direction=DESC",
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "10"},
+                {"key": "sortBy", "value": "createdAt"},
+                {"key": "direction", "value": "DESC"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Jobs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Search jobs returns filtered results', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/jobs?keyword=Java&location=Remote&page=0&size=10",
+              "query": [
+                {"key": "keyword", "value": "Java"},
+                {"key": "location", "value": "Remote"},
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "10"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Job By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Get job by ID returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "  pm.expect(jsonData.data).to.have.property('id');",
+                  "  pm.expect(jsonData.data).to.have.property('title');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/jobs/{{jobId}}"
+          }
+        },
+        {
+          "name": "Update Job",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Update job returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{recruiterToken}}", "type": "string"}
+              ]
+            },
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/v1/jobs/{{jobId}}",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Software Engineer CI\",\n  \"salaryMin\": 100000,\n  \"salaryMax\": 150000\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Job (Wrong Owner - Seeker) -> 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Delete job with wrong owner returns 403', function () {",
+                  "  pm.expect(pm.response.code).to.equal(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{seekerToken}}", "type": "string"}
+              ]
+            },
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/v1/jobs/{{jobId}}"
+          }
+        },
+        {
+          "name": "My Jobs (Recruiter)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('My jobs returns 200 with array', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "  pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{recruiterToken}}", "type": "string"}
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/jobs/recruiter/my-jobs"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {
+          "name": "Apply to Job",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Apply to job returns 201', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "  pm.expect(jsonData.data).to.have.property('id');",
+                  "  pm.collectionVariables.set('applicationId', jsonData.data.id);",
+                  "  pm.globals.set('applicationId', String(jsonData.data.id));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{seekerToken}}", "type": "string"}
+              ]
+            },
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/applications/apply",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobId\": {{jobId}},\n  \"coverLetter\": \"I am very interested in this position...\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Apply Again (Duplicate) -> 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Duplicate application returns 409', function () {",
+                  "  pm.expect(pm.response.code).to.equal(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{seekerToken}}", "type": "string"}
+              ]
+            },
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/applications/apply",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobId\": {{jobId}},\n  \"coverLetter\": \"Applying again...\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Applications",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Get my applications returns 200 with array', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "  pm.expect(jsonData.data).to.be.an('array');",
+                  "  pm.expect(jsonData.data.length).to.be.at.least(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{seekerToken}}", "type": "string"}
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/applications/my"
+          }
+        },
+        {
+          "name": "Get Job Applicants (Recruiter)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Get job applicants returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{recruiterToken}}", "type": "string"}
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/applications/job/{{jobId}}?page=0&size=10"
+          }
+        },
+        {
+          "name": "Update Application Status (Recruiter)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Update application status returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{recruiterToken}}", "type": "string"}
+              ]
+            },
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/v1/applications/{{applicationId}}/status?status=ACCEPTED"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Saved Jobs",
+      "item": [
+        {
+          "name": "Save Job",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Save job returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{seekerToken}}", "type": "string"}
+              ]
+            },
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/saved-jobs/{{jobId}}"
+          }
+        },
+        {
+          "name": "Get Saved Jobs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Get saved jobs returns 200 with array', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "  pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{seekerToken}}", "type": "string"}
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/saved-jobs"
+          }
+        },
+        {
+          "name": "Unsave Job",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Unsave job returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{seekerToken}}", "type": "string"}
+              ]
+            },
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/v1/saved-jobs/{{jobId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get User Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Get user profile returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "  pm.expect(jsonData.data).to.have.property('email');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{token}}", "type": "string"}
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/users/profile"
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Update user profile returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{token}}", "type": "string"}
+              ]
+            },
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/v1/users/profile",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated CI Name\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Dashboard",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Get dashboard returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('data');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {"key": "token", "value": "{{token}}", "type": "string"}
+              ]
+            },
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/users/dashboard"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Service",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('AI service health returns 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('status', 'running');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:5000/health"
+          }
+        },
+        {
+          "name": "Match Resume",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Match endpoint returns 200 with score', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('matchScore');",
+                  "  pm.expect(jsonData.matchScore).to.be.within(0, 100);",
+                  "  pm.expect(jsonData).to.have.property('skillsMatched');",
+                  "  pm.expect(jsonData).to.have.property('skillsMissing');",
+                  "  pm.expect(jsonData.skillsMatched).to.be.an('array');",
+                  "  pm.expect(jsonData.skillsMissing).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:5000/match",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resume\": \"Experienced Java developer with Spring Boot, microservices, REST APIs, SQL, Docker, and AWS.\",\n  \"job\": \"Senior Java Developer with Spring Boot experience, microservices, REST API design, AWS, Docker.\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

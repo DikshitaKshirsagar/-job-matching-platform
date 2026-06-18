@@ -1,0 +1,84 @@
+# Blue-Green Deployment Strategy for zero-downtime releases
+apiVersion: v1
+kind: Service
+metadata:
+  name: job-match-backend-active
+  namespace: job-match
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+spec:
+  selector:
+    app: job-match
+    tier: backend
+    release: blue  # Switch between blue/green during deployment
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+---
+# Green deployment (new version) - initially 0 replicas, scaled up during deploy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-match-backend-green
+  namespace: job-match
+  labels:
+    app: job-match
+    tier: backend
+    release: green
+spec:
+  replicas: 0  # Scaled up during deployment
+  selector:
+    matchLabels:
+      app: job-match
+      tier: backend
+      release: green
+  template:
+    metadata:
+      labels:
+        app: job-match
+        tier: backend
+        release: green
+    spec:
+      containers:
+      - name: backend
+        image: jobmatch/backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        - name: DEPLOYMENT_VERSION
+          value: "green"
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+# Deployment script (run during release):
+# Step 1: Deploy green version
+# kubectl scale deployment/job-match-backend-green --replicas=3 -n job-match
+#
+# Step 2: Wait for green to be ready
+# kubectl wait --for=condition=ready pod -l app=job-match,tier=backend,release=green -n job-match --timeout=300s
+#
+# Step 3: Run integration tests against green
+# curl http://job-match-backend-green:8080/actuator/health
+#
+# Step 4: Switch traffic to green
+# kubectl patch service job-match-backend-active -n job-match -p '{"spec":{"selector":{"release":"green"}}}'
+#
+# Step 5: Scale down blue
+# kubectl scale deployment/job-match-backend --replicas=0 -n job-match
+#
+# Step 6: Rollback (if needed):
+# kubectl patch service job-match-backend-active -n job-match -p '{"spec":{"selector":{"release":"blue"}}}'
+# kubectl scale deployment/job-match-backend --replicas=3 -n job-match

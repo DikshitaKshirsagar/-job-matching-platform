@@ -1,0 +1,10 @@
+$kind: http-request
+name: Save Job
+method: POST
+url: 'http://localhost:8081/api/v1/saved-jobs/1'
+order: 4000
+headers:
+  - key: Authorization
+    value: Bearer {{token}}
+body:
+  type: none

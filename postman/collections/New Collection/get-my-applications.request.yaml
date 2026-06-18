@@ -1,0 +1,10 @@
+$kind: http-request
+name: Get My Applications
+method: GET
+url: 'http://localhost:8081/api/v1/applications/my'
+order: 3001
+headers:
+  - key: Authorization
+    value: Bearer {{token}}
+body:
+  type: none

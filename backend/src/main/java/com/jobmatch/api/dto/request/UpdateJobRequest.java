@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
@@ -26,6 +27,6 @@ public class UpdateJobRequest {
     @Min(value = 0, message = "Maximum salary cannot be negative")
     private BigDecimal salaryMax;
 
-    private String requiredSkills;
+    private List<String> requiredSkills;
     private String experienceLevel;
 }

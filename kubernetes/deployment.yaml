@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-match-backend
+  namespace: job-match
+  labels:
+    app: job-match
+    tier: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: job-match
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: job-match
+        tier: backend
+    spec:
+      containers:
+      - name: backend
+        image: jobmatch/backend:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_DATASOURCE_URL
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: url
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jwt-secret
+              key: secret
+        - name: AI_SERVICE_URL
+          value: "http://ai-service:5000"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-match-frontend
+  namespace: job-match
+  labels:
+    app: job-match
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: job-match
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: job-match
+        tier: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: jobmatch/frontend:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job-match-ai-service
+  namespace: job-match
+  labels:
+    app: job-match
+    tier: ai-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: job-match
+      tier: ai-service
+  template:
+    metadata:
+      labels:
+        app: job-match
+        tier: ai-service
+    spec:
+      containers:
+      - name: ai-service
+        image: jobmatch/ai-service:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: AI_SERVICE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: ai-service-secret
+              key: api-key
+        - name: DEFAULT_MODEL
+          value: "all-MiniLM-L6-v2"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 60
+          periodSeconds: 15

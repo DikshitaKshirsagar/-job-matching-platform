@@ -1,0 +1,10 @@
+$kind: http-request
+name: Get Job By ID
+method: GET
+url: 'http://localhost:8081/api/v1/jobs/1'
+order: 2002
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: none

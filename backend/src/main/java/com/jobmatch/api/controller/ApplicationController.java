@@ -4,6 +4,7 @@ import com.jobmatch.api.dto.request.ApplyJobRequest;
 import com.jobmatch.api.dto.response.ApiResponse;
 import com.jobmatch.api.dto.response.ApplicationResponse;
 import com.jobmatch.service.ApplicationService;
+import com.jobmatch.util.UserIdResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -14,8 +15,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,13 +27,14 @@ import java.util.List;
 public class ApplicationController {
 
     private final ApplicationService applicationService;
+    private final UserIdResolver userIdResolver;
 
     @PostMapping("/apply")
     @Operation(summary = "Apply to a job", description = "Job seeker applies to a job posting")
     public ResponseEntity<ApiResponse<ApplicationResponse>> applyToJob(
             @Valid @RequestBody ApplyJobRequest request) {
         log.info("Apply to job id: {}", request.getJobId());
-        Long applicantId = getCurrentUserId();
+        Long applicantId = userIdResolver.getCurrentUserId();
         ApplicationResponse response = applicationService.applyToJob(request, applicantId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Application submitted successfully", response));
@@ -44,7 +44,7 @@ public class ApplicationController {
     @Operation(summary = "Get user's applications", description = "Retrieve all applications submitted by the current user")
     public ResponseEntity<ApiResponse<List<ApplicationResponse>>> getMyApplications() {
         log.debug("Get user's applications");
-        Long userId = getCurrentUserId();
+        Long userId = userIdResolver.getCurrentUserId();
         List<ApplicationResponse> applications = applicationService.getMyApplicationsList(userId);
         return ResponseEntity.ok(ApiResponse.success(applications));
     }
@@ -55,7 +55,7 @@ public class ApplicationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         log.debug("Get user's applications paginated: page={}, size={}", page, size);
-        Long userId = getCurrentUserId();
+        Long userId = userIdResolver.getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size);
         Page<ApplicationResponse> applications = applicationService.getMyApplications(userId, pageable);
         return ResponseEntity.ok(ApiResponse.success(applications));
@@ -68,8 +68,9 @@ public class ApplicationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         log.debug("Get applications for job id: {}", jobId);
+        Long recruiterId = userIdResolver.getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size);
-        Page<ApplicationResponse> applications = applicationService.getApplicationsByJob(jobId, pageable);
+        Page<ApplicationResponse> applications = applicationService.getApplicationsByJob(jobId, recruiterId, pageable);
         return ResponseEntity.ok(ApiResponse.success(applications));
     }
 
@@ -79,15 +80,9 @@ public class ApplicationController {
             @PathVariable Long applicationId,
             @RequestParam String status) {
         log.info("Update application id: {} status to: {}", applicationId, status);
-        Long recruiterId = getCurrentUserId();
+        Long recruiterId = userIdResolver.getCurrentUserId();
         ApplicationResponse response = applicationService.updateApplicationStatus(applicationId, status, recruiterId);
         return ResponseEntity.ok(ApiResponse.success("Application status updated", response));
     }
 
-    private Long getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        // In a real application, extract from principal or JWT claims
-        // For now, this is a placeholder
-        return 1L;
-    }
 }

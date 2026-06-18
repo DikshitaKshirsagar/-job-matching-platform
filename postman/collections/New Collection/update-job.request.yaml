@@ -1,0 +1,18 @@
+$kind: http-request
+name: Update Job
+method: PUT
+url: 'http://localhost:8081/api/v1/jobs/1'
+order: 2004
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: Bearer {{token}}
+body:
+  type: json
+  content: |-
+    {
+      "title": "Senior Software Engineer",
+      "description": "Looking for a senior Java developer",
+      "location": "San Francisco"
+    }

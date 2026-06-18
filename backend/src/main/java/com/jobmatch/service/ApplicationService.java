@@ -11,6 +11,6 @@ public interface ApplicationService {
     ApplicationResponse applyToJob(ApplyJobRequest request, Long applicantId);
     Page<ApplicationResponse> getMyApplications(Long userId, Pageable pageable);
     List<ApplicationResponse> getMyApplicationsList(Long userId);
-    Page<ApplicationResponse> getApplicationsByJob(Long jobId, Pageable pageable);
+    Page<ApplicationResponse> getApplicationsByJob(Long jobId, Long recruiterId, Pageable pageable);
     ApplicationResponse updateApplicationStatus(Long applicationId, String status, Long recruiterId);
 }

@@ -1,0 +1,16 @@
+$kind: http-request
+name: Update User Profile
+method: PATCH
+url: 'http://localhost:8081/api/v1/users/profile'
+order: 5001
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: Bearer {{token}}
+body:
+  type: json
+  content: |-
+    {
+      "name": "Updated Name"
+    }

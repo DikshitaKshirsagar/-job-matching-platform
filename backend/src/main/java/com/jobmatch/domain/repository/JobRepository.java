@@ -41,4 +41,29 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
         @Param("location") String location,
         Pageable pageable
     );
+
+    // Full-text search using MySQL FULLTEXT index for better performance
+    @Query(value = """
+        SELECT j FROM Job j
+        WHERE j.deleted = false
+        AND j.status = 'ACTIVE'
+        AND (:keyword IS NULL OR 
+             MATCH(j.title, j.description, j.company, j.location) AGAINST(:keyword IN BOOLEAN MODE))
+        AND (:location IS NULL OR
+             LOWER(j.location) LIKE LOWER(CONCAT('%', :location, '%')))
+        ORDER BY j.createdAt DESC
+        """)
+    Page<Job> searchJobsFulltext(
+        @Param("keyword") String keyword,
+        @Param("location") String location,
+        Pageable pageable
+    );
+
+    // Uses composite index idx_job_recruiter_status
+    Page<Job> findByRecruiterIdAndStatusAndDeletedFalse(Long recruiterId, JobStatus status, Pageable pageable);
+
+    // Uses composite index idx_job_active_listing
+    Page<Job> findByStatusAndDeletedFalseOrderByCreatedAtDesc(JobStatus status, Pageable pageable);
+
+    long countByStatusAndDeletedFalse(JobStatus status);
 }

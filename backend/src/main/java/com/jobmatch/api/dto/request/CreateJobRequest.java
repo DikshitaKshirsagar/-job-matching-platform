@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
@@ -32,7 +33,13 @@ public class CreateJobRequest {
     @Min(value = 0, message = "Maximum salary cannot be negative")
     private BigDecimal salaryMax;
 
-    private String requiredSkills;
+    private List<String> requiredSkills;
 
     private String experienceLevel;
+
+    @AssertTrue(message = "salaryMin must be <= salaryMax")
+    public boolean isSalaryRangeValid() {
+        if (salaryMin == null || salaryMax == null) return true;
+        return salaryMin.compareTo(salaryMax) <= 0;
+    }
 }

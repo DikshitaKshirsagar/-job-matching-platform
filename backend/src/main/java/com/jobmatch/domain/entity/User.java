@@ -69,6 +69,10 @@ public class User implements UserDetails {
     @JsonIgnore
     private LocalDateTime passwordResetTokenExpiry;
 
+    @Column(length = 500)
+    @JsonIgnore
+    private String refreshToken;
+
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted = false;
 

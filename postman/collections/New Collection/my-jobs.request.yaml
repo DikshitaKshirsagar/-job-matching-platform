@@ -1,0 +1,10 @@
+$kind: http-request
+name: My Jobs (Recruiter)
+method: GET
+url: 'http://localhost:8081/api/v1/jobs/recruiter/my-jobs'
+order: 2006
+headers:
+  - key: Authorization
+    value: Bearer {{token}}
+body:
+  type: none

@@ -1,20 +1,21 @@
 package com.jobmatch.api.controller;
 
 import com.jobmatch.api.dto.response.ApiResponse;
+import com.jobmatch.api.dto.response.DashboardStatsResponse;
+import com.jobmatch.api.dto.response.JobRecommendationResponse;
 import com.jobmatch.api.dto.response.UserResponse;
 import com.jobmatch.service.UserService;
+import com.jobmatch.util.UserIdResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,6 +26,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final UserIdResolver userIdResolver;
 
     @GetMapping("/profile")
     @Operation(summary = "Get user profile", description = "Retrieve the current user's profile information")
@@ -39,7 +41,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponse>> updateUserProfile(@RequestBody Map<String, String> request) {
         log.info("Update user profile");
         String name = request.get("name");
-        Long userId = getCurrentUserId();
+        Long userId = userIdResolver.getCurrentUserId();
         UserResponse updated = userService.updateUserProfile(userId, name);
         return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", updated));
     }
@@ -49,7 +51,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<Map<String, String>>> uploadResume(
             @RequestParam("file") MultipartFile file) {
         log.info("Upload resume");
-        Long userId = getCurrentUserId();
+        Long userId = userIdResolver.getCurrentUserId();
         userService.uploadResume(userId, file);
         
         Map<String, String> response = new HashMap<>();
@@ -61,23 +63,20 @@ public class UserController {
 
     @GetMapping("/dashboard")
     @Operation(summary = "Get dashboard data", description = "Get user dashboard with summary statistics")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getDashboard() {
+    public ResponseEntity<ApiResponse<DashboardStatsResponse>> getDashboard() {
         log.debug("Get dashboard data");
-        Long userId = getCurrentUserId();
-        UserResponse profile = userService.getUserProfile(userId);
-        
-        Map<String, Object> dashboard = new HashMap<>();
-        dashboard.put("user", profile);
-        dashboard.put("applicationsCount", 0); // To be populated from ApplicationService
-        dashboard.put("savedJobsCount", 0);     // To be populated from SavedJobService
-        
+        Long userId = userIdResolver.getCurrentUserId();
+        DashboardStatsResponse dashboard = userService.getDashboard(userId);
         return ResponseEntity.ok(ApiResponse.success(dashboard));
     }
 
-    private Long getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        // In production, extract from JWT token claims
-        // For now, return a placeholder
-        return 1L;
+    @GetMapping("/recommendations")
+    @Operation(summary = "Get AI job recommendations", description = "Get personalized AI-based job recommendations for the current user")
+    public ResponseEntity<ApiResponse<List<JobRecommendationResponse>>> getJobRecommendations() {
+        log.info("Get AI job recommendations");
+        Long userId = userIdResolver.getCurrentUserId();
+        List<JobRecommendationResponse> recommendations = userService.getJobRecommendations(userId);
+        return ResponseEntity.ok(ApiResponse.success(recommendations));
     }
+
 }
