@@ -86,7 +86,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional(readOnly = true)
     public List<ApplicationResponse> getMyApplicationsList(Long userId) {
         log.debug("Fetching all applications list for user id: {}", userId);
-        return applicationRepository.findByApplicantOrderByCreatedAtDesc(userId)
+        return applicationRepository.findByApplicantIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -112,7 +112,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new com.jobmatch.exception.UnauthorizedException("You can only view applications for your own jobs");
         }
 
-        return applicationRepository.findByJobOrderByMatchScoreDesc(jobId, pageable)
+        return applicationRepository.findByJobIdOrderByMatchScoreDesc(jobId, pageable)
                 .map(this::toResponse);
     }
 

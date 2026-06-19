@@ -207,7 +207,7 @@ class ApplicationServiceImplTest {
     void getMyApplicationsList_whenUserHasApplications_returnsList() {
         Long userId = 1L;
 
-        when(applicationRepository.findByApplicantOrderByCreatedAtDesc(userId)).thenReturn(List.of(application));
+        when(applicationRepository.findByApplicantIdOrderByCreatedAtDesc(userId)).thenReturn(List.of(application));
 
         List<ApplicationResponse> result = applicationService.getMyApplicationsList(userId);
 
@@ -215,14 +215,14 @@ class ApplicationServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(1L, result.get(0).getId());
         assertEquals("Software Engineer", result.get(0).getJobTitle());
-        verify(applicationRepository).findByApplicantOrderByCreatedAtDesc(userId);
+        verify(applicationRepository).findByApplicantIdOrderByCreatedAtDesc(userId);
     }
 
     @Test
     void getMyApplicationsList_whenNoApplications_returnsEmptyList() {
         Long userId = 1L;
 
-        when(applicationRepository.findByApplicantOrderByCreatedAtDesc(userId)).thenReturn(List.of());
+        when(applicationRepository.findByApplicantIdOrderByCreatedAtDesc(userId)).thenReturn(List.of());
 
         List<ApplicationResponse> result = applicationService.getMyApplicationsList(userId);
 
@@ -239,14 +239,14 @@ class ApplicationServiceImplTest {
 
         when(jobRepository.findById(jobId)).thenReturn(Optional.of(job));
         when(userRepository.findById(recruiterId)).thenReturn(Optional.of(recruiter));
-        when(applicationRepository.findByJobOrderByMatchScoreDesc(jobId, pageable)).thenReturn(applicationPage);
+        when(applicationRepository.findByJobIdOrderByMatchScoreDesc(jobId, pageable)).thenReturn(applicationPage);
 
         Page<ApplicationResponse> result = applicationService.getApplicationsByJob(jobId, recruiterId, pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
         assertEquals(1L, result.getContent().get(0).getId());
-        verify(applicationRepository).findByJobOrderByMatchScoreDesc(jobId, pageable);
+        verify(applicationRepository).findByJobIdOrderByMatchScoreDesc(jobId, pageable);
     }
 
     @Test

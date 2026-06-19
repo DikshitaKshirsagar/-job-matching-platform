@@ -42,10 +42,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     boolean existsByApplicantIdAndJobId(Long applicantId, Long jobId);
 
     // Used by existing ApplicationServiceImpl
-    List<Application> findByApplicantOrderByCreatedAtDesc(Long applicantId);
+    List<Application> findByApplicantIdOrderByCreatedAtDesc(Long applicantId);
 
     // Used by existing ApplicationServiceImpl
-    Page<Application> findByJobOrderByMatchScoreDesc(Long jobId, Pageable pageable);
+    Page<Application> findByJobIdOrderByMatchScoreDesc(Long jobId, Pageable pageable);
 
     // Used by UserServiceImpl
     long countByApplicantId(Long applicantId);

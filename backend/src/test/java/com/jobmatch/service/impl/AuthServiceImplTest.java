@@ -146,6 +146,7 @@ class AuthServiceImplTest {
         user.setEmail("john@example.com");
         user.setPassword("encoded-password");
         user.setRole(UserRole.ROLE_JOB_SEEKER);
+        user.setEmailVerified(true);
 
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("password123", "encoded-password")).thenReturn(true);

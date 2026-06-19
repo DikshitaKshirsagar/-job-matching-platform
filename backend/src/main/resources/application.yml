@@ -3,10 +3,10 @@ spring:
     name: job-matching-platform
 
   datasource:
-    url: ${DB_URI:${DB_URL:jdbc:mysql://localhost:3307/jobmatch_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:h2:mem:jobmatch_db;DB_CLOSE_DELAY=-1;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -16,12 +16,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.H2Dialect
         default_batch_fetch_size: 100
     open-in-view: false
 
@@ -43,7 +43,7 @@ spring:
       max-request-size: 5MB
 
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration
     baseline-on-migrate: true
     baseline-version: 0
@@ -57,15 +57,15 @@ server:
 
 app:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:ChangeMeJwtSecretKey2026ForLocalDevelopmentOnlyMustBe64BytesLong}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
     refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
   ai-service:
-    base-url: ${AI_SERVICE_URL}
+    base-url: ${AI_SERVICE_URL:http://localhost:5000}
     api-key: ${AI_SERVICE_API_KEY:}
     timeout-seconds: 30
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
   file-upload:
     upload-dir: ${UPLOAD_DIR:uploads}
     allowed-extensions: pdf,doc,docx
@@ -101,6 +101,9 @@ management:
   endpoint:
     prometheus:
       enabled: true
+  health:
+    mail:
+      enabled: false
   metrics:
     export:
       prometheus:

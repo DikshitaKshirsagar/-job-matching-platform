@@ -8,8 +8,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-ChangeMeStrongPassword123!}
       MYSQL_DATABASE: ${DB_NAME:-jobmatch_db}
-      MYSQL_USER: ${DB_USERNAME:-root}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-ChangeMeStrongPassword123!}
     ports:
       - '3307:3306'
     volumes:

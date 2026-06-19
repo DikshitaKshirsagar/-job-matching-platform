@@ -82,7 +82,7 @@ class JobControllerTest {
 
         CreateJobRequest request = new CreateJobRequest();
         request.setTitle("Software Engineer");
-        request.setDescription("Java developer needed");
+        request.setDescription("We are looking for an experienced Java developer to join our growing team and build scalable applications.");
         request.setCompany("Tech Corp");
         request.setLocation("New York");
         request.setRequiredSkills(List.of("Java", "Spring"));

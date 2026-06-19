@@ -3,6 +3,7 @@ package com.jobmatch;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -18,7 +19,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = BatchAutoConfiguration.class)
 @EnableJpaAuditing
 @EnableCaching
 public class JobMatchingPlatformApplication {

@@ -136,6 +136,9 @@ class UserServiceImplTest {
     void uploadResume_whenInvalidMimeType_throwsFileUploadException() {
         MockMultipartFile wrongMime = new MockMultipartFile(
                 "file", "resume.pdf", "image/png", "%PDF-1.4 content".getBytes());
+        User user = new User();
+        user.setId(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         assertThrows(FileUploadException.class, () -> userService.uploadResume(1L, wrongMime));
     }
 

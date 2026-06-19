@@ -42,13 +42,16 @@ public interface JobRepository extends JpaRepository<Job, Long>, JpaSpecificatio
         Pageable pageable
     );
 
-    // Full-text search using MySQL FULLTEXT index for better performance
+    // Portable search used by services that previously called the MySQL full-text query.
     @Query(value = """
         SELECT j FROM Job j
         WHERE j.deleted = false
         AND j.status = 'ACTIVE'
-        AND (:keyword IS NULL OR 
-             MATCH(j.title, j.description, j.company, j.location) AGAINST(:keyword IN BOOLEAN MODE))
+        AND (:keyword IS NULL OR
+             LOWER(j.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+             LOWER(j.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+             LOWER(j.company) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+             LOWER(j.location) LIKE LOWER(CONCAT('%', :keyword, '%')))
         AND (:location IS NULL OR
              LOWER(j.location) LIKE LOWER(CONCAT('%', :location, '%')))
         ORDER BY j.createdAt DESC

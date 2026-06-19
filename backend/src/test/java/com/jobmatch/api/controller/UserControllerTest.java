@@ -1,5 +1,6 @@
 package com.jobmatch.api.controller;
 
+import com.jobmatch.api.dto.response.DashboardStatsResponse;
 import com.jobmatch.api.dto.response.UserResponse;
 import com.jobmatch.domain.enums.UserRole;
 import com.jobmatch.exception.GlobalExceptionHandler;
@@ -84,7 +85,13 @@ class UserControllerTest {
     @Test
     void getDashboard_whenAuthenticated_returnsDashboard() throws Exception {
         when(userIdResolver.getCurrentUserId()).thenReturn(1L);
-        when(userService.getUserProfile(1L)).thenReturn(createSampleResponse());
+        DashboardStatsResponse dashboardResponse = DashboardStatsResponse.builder()
+                .user(createSampleResponse())
+                .applicationsCount(5)
+                .savedJobsCount(3)
+                .matchedJobs(10)
+                .build();
+        when(userService.getDashboard(1L)).thenReturn(dashboardResponse);
 
         mockMvc.perform(get("/api/v1/users/dashboard"))
                 .andExpect(status().isOk())
