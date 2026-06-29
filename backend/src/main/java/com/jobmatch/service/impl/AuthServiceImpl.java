@@ -71,16 +71,16 @@ public class AuthServiceImpl implements AuthService {
         user.setRole(role);
 
         // Generate email verification token (not auto-verified anymore)
-        String verificationToken = UUID.randomUUID().toString();
-        user.setVerificationToken(verificationToken);
-        user.setVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
-        user.setEmailVerified(false);
+        //String verificationToken = UUID.randomUUID().toString();
+        //user.setVerificationToken(verificationToken);
+        //user.setVerificationTokenExpiry(LocalDateTime.now().plusHours(24));
+        //user.setEmailVerified(false);
 
         User savedUser = userRepository.save(user);
         log.info("Successfully registered user with id: {}", savedUser.getId());
 
         // Send verification email
-        emailService.sendVerificationEmail(email, verificationToken);
+        //emailService.sendVerificationEmail(email, verificationToken);
 
         String token = null;
         String refreshToken = null;
@@ -132,10 +132,10 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // Optionally block login until email is verified
-        if (!user.isEmailVerified()) {
-            log.warn("Login failed: Email not verified for user: {}", email);
-            throw new UnauthorizedException("Please verify your email before logging in. Check your inbox for the verification link.");
-        }
+       // if (!user.isEmailVerified()) {
+         //   log.warn("Login failed: Email not verified for user: {}", email);
+           // throw new UnauthorizedException("Please verify your email before logging in. Check your inbox for the verification link.");
+        //}
 
         String token = jwtTokenProvider.generateTokenFromEmail(user.getEmail());
         String refreshToken = jwtTokenProvider.generateRefreshTokenFromEmail(user.getEmail());

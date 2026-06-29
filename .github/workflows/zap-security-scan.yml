@@ -2,68 +2,82 @@ name: OWASP ZAP Security Scan
 
 on:
   schedule:
-    - cron: '0 2 * * 0'  # Every Sunday at 2 AM
+    - cron: '0 2 * * 0' # Every Sunday at 2 AM
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   zap_scan:
     runs-on: ubuntu-latest
     name: OWASP ZAP Security Scan
-    
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Start Application
-      run: |
-        docker compose -f docker-compose.yml up -d --build
-        sleep 60
-        curl --retry 10 --retry-delay 5 --retry-connrefused http://localhost:8080/actuator/health
+      - name: Start Application Stack
+        run: |
+          docker compose -f docker-compose.yml up -d --build
+          echo "Waiting for services to be healthy..."
 
-    - name: OWASP ZAP Full Scan
-      uses: zaproxy/action-full-scan@v0.10.0
-      with:
-        target: 'http://localhost:8080'
-        rules_file_name: '.zap/rules.tsv'
-        cmd_options: '-a -j -T 60'
-        issue_title: 'ZAP Security Scan Report'
-        fail_action: false
-        allow_issue_writing: false
-        artifact_name: 'zap-report'
+      - name: Wait for Backend Health Check
+        run: |
+          echo "Waiting for backend on port 8081..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8081/actuator/health > /dev/null 2>&1; then
+              echo "Backend is healthy!"
+              exit 0
+            fi
+            echo "Attempt $i/30 - retrying in 5 seconds..."
+            sleep 5
+          done
+          echo "Backend failed to become healthy within timeout"
+          docker compose -f docker-compose.yml logs
+          exit 1
 
-    - name: OWASP ZAP API Scan
-      uses: zaproxy/action-api-scan@v0.7.0
-      with:
-        target: 'http://localhost:8080/v3/api-docs'
-        format: 'openapi'
-        artifact_name: 'zap-api-report'
+      - name: OWASP ZAP Full Scan
+        uses: zaproxy/action-full-scan@v0.10.0
+        with:
+          target: "http://localhost:8081"
+          rules_file_name: ".zap/rules.tsv"
+          cmd_options: "-a -j -T 60"
+          issue_title: "ZAP Security Scan Report"
+          fail_action: false
+          allow_issue_writing: false
+          artifact_name: "zap-report"
 
-    - name: Upload ZAP Reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: zap-security-reports
-        path: |
-          zap-report/
-          zap-api-report/
-        retention-days: 30
+      - name: OWASP ZAP API Scan
+        uses: zaproxy/action-api-scan@v0.7.0
+        with:
+          target: "http://localhost:8081/api-docs"
+          format: "openapi"
+          artifact_name: "zap-api-report"
 
-    - name: Security Report Summary
-      if: always()
-      run: |
-        echo "## OWASP ZAP Security Scan Results" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Scan Complete" >> $GITHUB_STEP_SUMMARY
-        echo "- Full Scan: http://localhost:8080" >> $GITHUB_STEP_SUMMARY
-        echo "- API Scan: OpenAPI Specification" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "Download ZAP reports from the workflow artifacts." >> $GITHUB_STEP_SUMMARY
-        
-    - name: Cleanup
-      if: always()
-      run: docker compose -f docker-compose.yml down -v
+      - name: Upload ZAP Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-security-reports
+          path: |
+            zap-report/
+            zap-api-report/
+          retention-days: 30
+
+      - name: Security Report Summary
+        if: always()
+        run: |
+          echo "## OWASP ZAP Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Scan Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- Full Scan: http://localhost:8081" >> $GITHUB_STEP_SUMMARY
+          echo "- API Scan: OpenAPI Specification" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download ZAP reports from the workflow artifacts." >> $GITHUB_STEP_SUMMARY
+
+      - name: Cleanup
+        if: always()
+        run: docker compose -f docker-compose.yml down -v 2>/dev/null || true
